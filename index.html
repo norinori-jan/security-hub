@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Security Hub — 司令塔</title>
+  <script src="https://norinori-jan.github.io/security-hub/bridge.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700&display=swap');
+
+    :root {
+      --primary:    #00ff41;
+      --accent:     #00d9ff;
+      --secondary:  #ff006e;
+      --warning:    #ffa500;
+      --bg:         #0a0e27;
+      --bg2:        #050813;
+      --surface:    rgba(20,25,50,0.7);
+      --border:     rgba(0,255,65,0.3);
+      --text:       #e0e0e0;
+      --muted:      #606880;
+      --glow:       0 0 12px rgba(0,255,65,0.35);
+      --glow-acc:   0 0 12px rgba(0,217,255,0.35);
+      --safe-top:    max(env(safe-area-inset-top), 12px);
+      --safe-bottom: max(env(safe-area-inset-bottom), 12px);
+      --safe-h:      max(env(safe-area-inset-left), 20px);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: linear-gradient(135deg, #0a0e27 0%, #111830 60%, #0a0e27 100%);
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      padding-top: var(--safe-top);
+      padding-bottom: var(--safe-bottom);
+      overflow-x: hidden;
+    }
+
+    /* scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255,255,255,0.025) 0px,
+        rgba(255,255,255,0.025) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      z-index: 0;
+      animation: scan 12s linear infinite;
+    }
+    @keyframes scan { from{transform:translateY(0)} to{transform:translateY(6px)} }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(5,8,19,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--primary);
+      padding: 14px var(--safe-h);
+      box-shadow: var(--glow);
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 17px; letter-spacing: 3px;
+      color: var(--primary);
+      text-shadow: var(--glow);
+    }
+    .logo span { color: var(--accent); }
+    .bridge-status {
+      font-size: 11px; color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.4s;
+    }
+    .dot.live { background: var(--primary); box-shadow: var(--glow); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 1100px; margin: 0 auto;
+      padding: 28px var(--safe-h);
+      position: relative; z-index: 1;
+    }
+
+    /* ── STAT ROW ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 16px;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .stat-card:hover { border-color: var(--accent); box-shadow: var(--glow-acc); }
+    .stat-val {
+      font-size: 30px; font-weight: 700;
+      color: var(--primary);
+      text-shadow: var(--glow);
+      line-height: 1;
+    }
+    .stat-lbl {
+      font-size: 10px; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      margin-top: 6px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,217,255,0.2);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::before { content:''; flex:1; height:1px; background:transparent; }
+
+    /* ── REPO CARDS ── */
+    .repo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .repo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 20px;
+      transition: all 0.3s;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+    .repo-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,255,65,0.03), transparent);
+      pointer-events: none;
+    }
+    .repo-card:hover { border-color: var(--primary); box-shadow: var(--glow); transform: translateY(-2px); }
+    .repo-card.hub { border-color: rgba(0,217,255,0.5); }
+    .repo-card.hub:hover { border-color: var(--accent); box-shadow: var(--glow-acc); }
+
+    .repo-icon { font-size: 26px; margin-bottom: 12px; }
+    .repo-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 14px; font-weight: 700;
+      color: var(--primary); margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+    .repo-card.hub .repo-name { color: var(--accent); }
+    .repo-desc { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+    .repo-link {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      padding: 5px 12px;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+    .repo-link:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); }
+    .repo-card.hub .repo-link { color: var(--accent); border-color: var(--accent); }
+    .repo-card.hub .repo-link:hover { background: rgba(0,217,255,0.1); box-shadow: var(--glow-acc); }
+
+    /* ── SKILL PROGRESS ── */
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .skill-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .skill-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+    }
+    .skill-name { font-size: 12px; color: var(--text); font-weight: 600; }
+    .skill-badge {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px;
+      background: rgba(0,255,65,0.12);
+      color: var(--primary);
+      border: 1px solid rgba(0,255,65,0.3);
+    }
+    .skill-badge.done {
+      background: rgba(0,255,65,0.25);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .skill-badge.locked {
+      background: rgba(96,104,128,0.2);
+      color: var(--muted);
+      border-color: var(--muted);
+    }
+    .bar-track {
+      height: 5px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    /* ── EVENT LOG ── */
+    .event-log {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 28px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .event-log::-webkit-scrollbar { width: 4px; }
+    .event-log::-webkit-scrollbar-track { background: transparent; }
+    .event-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .event-entry {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 11px;
+    }
+    .event-entry:last-child { border-bottom: none; }
+    .event-ts { color: var(--muted); white-space: nowrap; min-width: 56px; }
+    .event-type {
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 700;
+      white-space: nowrap;
+    }
+    .event-type.skill   { background: rgba(0,255,65,0.15); color: var(--primary); }
+    .event-type.badge   { background: rgba(0,217,255,0.15); color: var(--accent); }
+    .event-type.unlock  { background: rgba(255,165,0,0.15); color: var(--warning); }
+    .event-type.system  { background: rgba(96,104,128,0.2); color: var(--muted); }
+    .event-msg { color: var(--text); line-height: 1.5; }
+    .empty-log { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 0; }
+
+    /* ── UNLOCK PANEL ── */
+    .unlock-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .unlock-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex; gap: 10px; align-items: center;
+      transition: all 0.3s;
+    }
+    .unlock-item.unlocked {
+      border-color: var(--primary);
+      background: rgba(0,255,65,0.06);
+    }
+    .unlock-icon { font-size: 20px; }
+    .unlock-name { font-size: 11px; font-weight: 600; color: var(--muted); }
+    .unlock-item.unlocked .unlock-name { color: var(--text); }
+    .unlock-src  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px var(--safe-h);
+      font-size: 11px; color: var(--muted);
+      border-top: 1px solid rgba(0,255,65,0.1);
+      position: relative; z-index: 1;
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .stat-row    { grid-template-columns: repeat(2,1fr); }
+      .repo-grid   { grid-template-columns: 1fr; }
+      .skill-grid  { grid-template-columns: 1fr; }
+      .unlock-grid { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 480px) {
+      .stat-row    { grid-template-columns: repeat(2,1fr); }
+      .unlock-grid { grid-template-columns: 1fr; }
+      .stat-val    { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">⬡ SECURITY<span>HUB</span></div>
+    <div class="bridge-status">
+      <div class="dot" id="bridge-dot"></div>
+      <span id="bridge-label">bridge 確認中...</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- STATS -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-skills">0</div>
+      <div class="stat-lbl">完了スキル</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-unlocks">0</div>
+      <div class="stat-lbl">アンロック済み</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-xp">0</div>
+      <div class="stat-lbl">総 XP</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-events">0</div>
+      <div class="stat-lbl">イベント数</div>
+    </div>
+  </div>
+
+  <!-- REPOS -->
+  <div class="section-title">リポジトリ</div>
+  <div class="repo-grid">
+    <div class="repo-card">
+      <div class="repo-icon">🎯</div>
+      <div class="repo-name">whitehacker-lab</div>
+      <div class="repo-desc">攻撃シミュレーター・CTF・パケット解析・STRIDE 脅威分析。スキルを完了すると bridge 経由で crypto-vault がアンロックされる。</div>
+      <a class="repo-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">→ OPEN</a>
+    </div>
+    <div class="repo-card hub">
+      <div class="repo-icon">⬡</div>
+      <div class="repo-name">security-hub</div>
+      <div class="repo-desc">3 つのリポジトリを LocalStorage bridge で接続する司令塔。スキル進捗・アンロック状態・イベントログをここで確認できる。</div>
+      <a class="repo-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">→ HERE</a>
+    </div>
+    <div class="repo-card">
+      <div class="repo-icon">🔐</div>
+      <div class="repo-name">crypto-vault</div>
+      <div class="repo-desc">暗号ツール・パスワードマネージャー・WebAuthn 認証。whitehacker-lab でスキルを習得するとフィーチャーが段階的にアンロックされる。</div>
+      <a class="repo-link" href="https://norinori-jan.github.io/crypto-vault/" target="_blank">→ OPEN</a>
+    </div>
+  </div>
+
+  <!-- SKILL PROGRESS -->
+  <div class="section-title">スキル進捗 (whitehacker-lab → bridge)</div>
+  <div class="skill-grid" id="skill-grid">
+    <!-- JS で描画 -->
+  </div>
+
+  <!-- UNLOCKS -->
+  <div class="section-title">crypto-vault アンロック状況</div>
+  <div class="unlock-grid" id="unlock-grid">
+    <!-- JS で描画 -->
+  </div>
+
+  <!-- EVENT LOG -->
+  <div class="section-title">イベントログ</div>
+  <div class="event-log" id="event-log">
+    <div class="empty-log">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>
+  </div>
+
+</main>
+
+<footer>
+  <a href="https://github.com/norinori-jan/security-hub" target="_blank">security-hub</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/norinori-jan/whitehacker-lab" target="_blank">whitehacker-lab</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/norinori-jan/crypto-vault" target="_blank">crypto-vault</a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  LocalStorage bridge で接続中
+</footer>
+
+<script>
+// ─── 定数 ───────────────────────────────────────────────────
+const SKILL_DEFS = [
+  { id: 'sqli',             label: 'SQL Injection',        src: 'whitehacker-lab' },
+  { id: 'xss',              label: 'XSS',                  src: 'whitehacker-lab' },
+  { id: 'csrf',             label: 'CSRF',                 src: 'whitehacker-lab' },
+  { id: 'crypto-aes',       label: 'AES-GCM 暗号化',       src: 'whitehacker-lab' },
+  { id: 'crypto-jwt',       label: 'JWT 解析',             src: 'whitehacker-lab' },
+  { id: 'ctf-beginner',     label: 'CTF: Base64',          src: 'whitehacker-lab' },
+  { id: 'ctf-intermediate', label: 'CTF: ROT13',           src: 'whitehacker-lab' },
+  { id: 'ctf-advanced',     label: 'CTF: JWT Flag',        src: 'whitehacker-lab' },
+  { id: 'threat-modeling',  label: 'STRIDE 脅威分析',      src: 'whitehacker-lab' },
+  // xp / badge 系
+  { id: 'xp_Attack',        label: 'Attack XP',            src: 'whitehacker-lab' },
+  { id: 'xp_Crypto',        label: 'Crypto XP',            src: 'whitehacker-lab' },
+  { id: 'xp_Packet',        label: 'Packet XP',            src: 'whitehacker-lab' },
+  { id: 'xp_CTF',           label: 'CTF XP',               src: 'whitehacker-lab' },
+];
+
+const FEATURE_DEFS = [
+  { id: 'crypto-vault:packet-analyzer',   label: 'Packet Analyzer',   icon: '📡' },
+  { id: 'crypto-vault:attack-simulator',  label: 'Attack Simulator',  icon: '🎯' },
+  { id: 'crypto-vault:ctf-challenge',     label: 'CTF Challenge',     icon: '🚩' },
+  { id: 'crypto-vault:threat-model',      label: 'Threat Model',      icon: '🛡️' },
+  { id: 'crypto-vault:crypto-playground', label: 'Crypto Playground', icon: '🔐' },
+  { id: 'crypto-vault:aes-tool',          label: 'AES Tool',          icon: '🔑' },
+];
+
+// ─── bridge から whitehacker_lab_state も読む ────────────────
+function getLabState() {
+  try {
+    const raw = localStorage.getItem('whitehacker_lab_state');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+// ─── 描画 ────────────────────────────────────────────────────
+function renderAll() {
+  const bridge = typeof SecBridge !== 'undefined' ? SecBridge : null;
+
+  // bridge status
+  const dot   = document.getElementById('bridge-dot');
+  const label = document.getElementById('bridge-label');
+  if (bridge) {
+    dot.classList.add('live');
+    label.textContent = 'bridge LIVE';
+  } else {
+    label.textContent = 'bridge 未接続';
+  }
+
+  const progress = bridge ? bridge.listProgress() : {};
+  const labState = getLabState();
+
+  // XP は whitehacker_lab_state から直接取得
+  const totalXP = labState ? (labState.xp || 0) : 0;
+
+  // stats
+  const skillCount   = Object.keys(progress).length;
+  const unlockCount  = bridge ? bridge.listUnlocks().length : 0;
+  const events       = bridge ? bridge.getEvents(200) : [];
+
+  document.getElementById('stat-skills').textContent  = skillCount;
+  document.getElementById('stat-unlocks').textContent = unlockCount;
+  document.getElementById('stat-xp').textContent      = totalXP;
+  document.getElementById('stat-events').textContent  = events.length;
+
+  // skill grid
+  const skillGrid = document.getElementById('skill-grid');
+  skillGrid.innerHTML = '';
+  SKILL_DEFS.forEach(def => {
+    const done  = !!progress[def.id];
+    const score = done ? (progress[def.id].score ?? null) : null;
+    const pct   = done ? 100 : 0;
+
+    skillGrid.innerHTML += `
+      <div class="skill-item">
+        <div class="skill-header">
+          <span class="skill-name">${def.label}</span>
+          <span class="skill-badge ${done ? 'done' : 'locked'}">${done ? '✓ 完了' : '未着手'}</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        ${score !== null ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">スコア: ${score}</div>` : ''}
+      </div>`;
+  });
+
+  // unlock grid
+  const unlockGrid = document.getElementById('unlock-grid');
+  unlockGrid.innerHTML = '';
+  FEATURE_DEFS.forEach(f => {
+    const ok = bridge ? bridge.hasFeature(f.id) : false;
+    unlockGrid.innerHTML += `
+      <div class="unlock-item ${ok ? 'unlocked' : ''}">
+        <div class="unlock-icon">${f.icon}</div>
+        <div>
+          <div class="unlock-name">${f.label}</div>
+          <div class="unlock-src">crypto-vault</div>
+        </div>
+      </div>`;
+  });
+
+  // event log
+  const logEl = document.getElementById('event-log');
+  if (events.length === 0) {
+    logEl.innerHTML = '<div class="empty-log">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>';
+  } else {
+    logEl.innerHTML = events.map(ev => {
+      const ts  = new Date(ev.ts).toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+      const cls = ev.type.startsWith('skill') ? 'skill'
+                : ev.type.startsWith('badge') ? 'badge'
+                : ev.type.includes('unlock')  ? 'unlock'
+                : 'system';
+      const msg = ev.type === 'skill_complete'
+        ? `スキル完了: <strong>${ev.skillId}</strong>${ev.score != null ? ` (${ev.score}点)` : ''}`
+        : ev.type === 'skill_reset'
+        ? `リセット: ${ev.skillId}`
+        : ev.type === 'vault_meta_updated'
+        ? `vault_meta 更新 (スキル数: ${ev.completedSkills ?? '-'})`
+        : ev.type === 'clear_all'
+        ? 'データ全消去'
+        : JSON.stringify(ev);
+      return `<div class="event-entry">
+        <span class="event-ts">${ts}</span>
+        <span class="event-type ${cls}">${ev.type}</span>
+        <span class="event-msg">${msg}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ─── 起動 & 自動更新 ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderAll();
+
+  // bridge イベント受信で即時更新
+  window.addEventListener('secbridge:vault_meta_updated', renderAll);
+
+  // LocalStorage 変化を監視（別タブの whitehacker-lab から）
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith('secbridge')) renderAll();
+    if (e.key === 'whitehacker_lab_state') renderAll();
+  });
+
+  // 5秒ごとにポーリング（フォールバック）
+  setInterval(renderAll, 5000);
+});
+</script>
+</body>
+</html>
