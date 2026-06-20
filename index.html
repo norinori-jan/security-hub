@@ -384,13 +384,41 @@
     <!-- JS で描画 -->
   </div>
 
-  <!-- UNLOCKS -->
-  <div class="section-title">crypto-vault アンロック状況</div>
-  <div class="unlock-grid" id="unlock-grid">
-    <!-- JS で描画 -->
-  </div>
+<!-- ▼ ロール切替 UI ▼ -->
+<div class="section-title">アクセス権限（ロール切替）</div>
+<div style="padding: 16px;">
+  <label for="roleSelect">モード選択:</label>
+  <select id="roleSelect">
+    <option value="owner">オーナー</option>
+    <option value="guest">ゲスト</option>
+    <option value="family">家族共有</option>
+  </select>
+</div>
 
-  <!-- EVENT LOG -->
+<script>
+  document.getElementById('roleSelect').addEventListener('change', e => {
+    localStorage.setItem('sessionRole', e.target.value);
+    location.reload();
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('sessionRole') || 'owner';
+    const sel = document.getElementById('roleSelect');
+    if (sel) sel.value = saved;
+  });
+</script>
+<!-- ▲ ロール切替 UI ここまで ▲ -->
+
+
+<!-- UNLOCKS -->
+<div class="section-title">crypto-vault アンロック状況</div>
+<div class="unlock-grid" id="unlock-grid">
+  <!-- JS で描画 -->
+</div>
+
+<!-- EVENT LOG -->
+
+ 
   <div class="section-title">イベントログ</div>
   <div class="event-log" id="event-log">
     <div class="empty-log">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>
@@ -554,5 +582,29 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(renderAll, 5000);
 });
 </script>
+
+<!-- ★ ここから追加：LABボタンのロール制御 -->
+<script type="module">
+import { getSessionRole } from './bridge.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+  const role = getSessionRole();
+  const labBtn = document.querySelector('[data-app="vault-lab"]');
+  if (!labBtn) return;
+
+  if (role === 'guest') {
+    labBtn.textContent = '🏴 CTF Only';
+    labBtn.onclick = () => window.open('crypto-vault/vault-lab.html#ctf', '_blank');
+  } else if (role === 'family') {
+    labBtn.textContent = '👨‍👩‍👧‍👦 学習モード';
+    labBtn.onclick = () => window.open('whitehacker-lab/index.html#learn', '_blank');
+  } else {
+    labBtn.textContent = '🧪 LAB';
+    labBtn.onclick = () => window.open('crypto-vault/vault-lab.html', '_blank');
+  }
+});
+</script>
+<!-- ★ 追加ここまで -->
+
 </body>
 </html>
