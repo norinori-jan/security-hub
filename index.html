@@ -40,7 +40,6 @@
       overflow-x: hidden;
     }
 
-    /* scanline overlay */
     body::before {
       content: '';
       position: fixed; inset: 0;
@@ -96,6 +95,56 @@
       position: relative; z-index: 1;
     }
 
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin: 28px 0 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,217,255,0.2);
+    }
+    .section-title:first-of-type { margin-top: 0; }
+
+    /* ── ROLE BAR ── */
+    .role-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 24px;
+    }
+    .role-left {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; color: var(--muted);
+    }
+    .role-icon { font-size: 18px; }
+    .role-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 3px 12px; border-radius: 20px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .badge-owner  { background: rgba(255,165,0,0.18);  color: var(--warning); border: 1px solid rgba(255,165,0,0.4); }
+    .badge-family { background: rgba(0,217,255,0.12);  color: var(--accent);  border: 1px solid rgba(0,217,255,0.35); }
+    .badge-guest  { background: rgba(96,104,128,0.18); color: var(--muted);   border: 1px solid rgba(96,104,128,0.4); }
+    .role-sel {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(5,8,19,0.8);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+    .role-sel:focus { border-color: var(--accent); }
+
     /* ── STAT ROW ── */
     .stat-row {
       display: grid;
@@ -124,57 +173,50 @@
       margin-top: 6px;
     }
 
-    /* ── SECTION TITLE ── */
-    .section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      color: var(--accent);
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(0,217,255,0.2);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .section-title::before { content:''; flex:1; height:1px; background:transparent; }
-
-    /* ── REPO CARDS ── */
-    .repo-grid {
+    /* ── APP GRID ── */
+    .app-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
       margin-bottom: 28px;
     }
-    .repo-card {
+    .app-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 22px 20px;
       transition: all 0.3s;
-      cursor: default;
       position: relative;
       overflow: hidden;
     }
-    .repo-card::after {
+    .app-card::after {
       content: '';
       position: absolute; inset: 0;
       background: linear-gradient(135deg, rgba(0,255,65,0.03), transparent);
       pointer-events: none;
     }
-    .repo-card:hover { border-color: var(--primary); box-shadow: var(--glow); transform: translateY(-2px); }
-    .repo-card.hub { border-color: rgba(0,217,255,0.5); }
-    .repo-card.hub:hover { border-color: var(--accent); box-shadow: var(--glow-acc); }
+    .app-card:hover { border-color: var(--primary); box-shadow: var(--glow); transform: translateY(-2px); }
+    .app-card.hub   { border-color: rgba(0,217,255,0.5); }
+    .app-card.hub:hover { border-color: var(--accent); box-shadow: var(--glow-acc); }
 
-    .repo-icon { font-size: 26px; margin-bottom: 12px; }
-    .repo-name {
+    .app-icon { font-size: 26px; margin-bottom: 10px; }
+    .app-name {
       font-family: 'Syne', sans-serif;
       font-size: 14px; font-weight: 700;
       color: var(--primary); margin-bottom: 4px;
       letter-spacing: 1px;
     }
-    .repo-card.hub .repo-name { color: var(--accent); }
-    .repo-desc { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
-    .repo-link {
+    .app-card.hub .app-name { color: var(--accent); }
+    .app-desc { font-size: 11px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+    .app-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; margin-bottom: 14px;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .s-live { background: var(--primary); box-shadow: var(--glow); }
+    .s-hub  { background: var(--accent);  box-shadow: var(--glow-acc); }
+    .s-idle { background: var(--muted); }
+    .app-link {
       display: inline-block;
       font-size: 11px; font-weight: 600;
       color: var(--primary);
@@ -184,17 +226,20 @@
       text-decoration: none;
       text-transform: uppercase;
       letter-spacing: 1px;
+      cursor: pointer;
+      background: transparent;
+      font-family: 'JetBrains Mono', monospace;
       transition: all 0.2s;
     }
-    .repo-link:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); }
-    .repo-card.hub .repo-link { color: var(--accent); border-color: var(--accent); }
-    .repo-card.hub .repo-link:hover { background: rgba(0,217,255,0.1); box-shadow: var(--glow-acc); }
+    .app-link:hover { background: rgba(0,255,65,0.1); box-shadow: var(--glow); }
+    .app-card.hub .app-link { color: var(--accent); border-color: var(--accent); }
+    .app-card.hub .app-link:hover { background: rgba(0,217,255,0.1); box-shadow: var(--glow-acc); }
 
-    /* ── SKILL PROGRESS ── */
+    /* ── SKILL GRID ── */
     .skill-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      gap: 12px;
       margin-bottom: 28px;
     }
     .skill-item {
@@ -211,68 +256,28 @@
     .skill-badge {
       font-size: 10px; font-weight: 700;
       padding: 2px 8px; border-radius: 10px;
-      background: rgba(0,255,65,0.12);
-      color: var(--primary);
-      border: 1px solid rgba(0,255,65,0.3);
     }
-    .skill-badge.done {
-      background: rgba(0,255,65,0.25);
-      color: var(--primary);
-      border-color: var(--primary);
+    .badge-done {
+      background: rgba(0,255,65,0.2); color: var(--primary);
+      border: 1px solid rgba(0,255,65,0.4);
     }
-    .skill-badge.locked {
-      background: rgba(96,104,128,0.2);
-      color: var(--muted);
-      border-color: var(--muted);
+    .badge-lock {
+      background: rgba(96,104,128,0.2); color: var(--muted);
+      border: 1px solid rgba(96,104,128,0.3);
     }
     .bar-track {
-      height: 5px;
+      height: 4px;
       background: rgba(255,255,255,0.06);
-      border-radius: 3px;
-      overflow: hidden;
+      border-radius: 2px; overflow: hidden;
     }
     .bar-fill {
-      height: 100%;
-      border-radius: 3px;
+      height: 100%; border-radius: 2px;
       background: linear-gradient(90deg, var(--primary), var(--accent));
-      transition: width 0.6s ease;
-      width: 0%;
+      transition: width 0.7s cubic-bezier(0.23,1,0.32,1);
     }
+    .skill-score { font-size: 10px; color: var(--muted); margin-top: 4px; }
 
-    /* ── EVENT LOG ── */
-    .event-log {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 28px;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-    .event-log::-webkit-scrollbar { width: 4px; }
-    .event-log::-webkit-scrollbar-track { background: transparent; }
-    .event-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-    .event-entry {
-      display: flex; gap: 10px; align-items: flex-start;
-      padding: 7px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 11px;
-    }
-    .event-entry:last-child { border-bottom: none; }
-    .event-ts { color: var(--muted); white-space: nowrap; min-width: 56px; }
-    .event-type {
-      padding: 1px 6px; border-radius: 3px;
-      font-size: 10px; font-weight: 700;
-      white-space: nowrap;
-    }
-    .event-type.skill   { background: rgba(0,255,65,0.15); color: var(--primary); }
-    .event-type.badge   { background: rgba(0,217,255,0.15); color: var(--accent); }
-    .event-type.unlock  { background: rgba(255,165,0,0.15); color: var(--warning); }
-    .event-type.system  { background: rgba(96,104,128,0.2); color: var(--muted); }
-    .event-msg { color: var(--text); line-height: 1.5; }
-    .empty-log { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 0; }
-
-    /* ── UNLOCK PANEL ── */
+    /* ── UNLOCK GRID ── */
     .unlock-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -284,17 +289,53 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 14px;
-      display: flex; gap: 10px; align-items: center;
+      display: flex; align-items: center; gap: 10px;
       transition: all 0.3s;
     }
     .unlock-item.unlocked {
       border-color: var(--primary);
       background: rgba(0,255,65,0.06);
+      box-shadow: var(--glow);
     }
     .unlock-icon { font-size: 20px; }
+    .unlock-info { }
     .unlock-name { font-size: 11px; font-weight: 600; color: var(--muted); }
     .unlock-item.unlocked .unlock-name { color: var(--text); }
     .unlock-src  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* ── EVENT LOG ── */
+    .event-log {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .event-log::-webkit-scrollbar { width: 4px; }
+    .event-log::-webkit-scrollbar-track { background: transparent; }
+    .event-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .event-entry {
+      display: grid;
+      grid-template-columns: 48px 90px 1fr;
+      gap: 10px; align-items: start;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 11px;
+    }
+    .event-entry:last-child { border-bottom: none; }
+    .event-ts { color: var(--muted); }
+    .event-type {
+      font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 3px;
+      text-align: center; white-space: nowrap;
+    }
+    .et-skill  { background: rgba(0,255,65,0.15);  color: var(--primary); }
+    .et-badge  { background: rgba(0,217,255,0.15); color: var(--accent); }
+    .et-unlock { background: rgba(255,165,0,0.15); color: var(--warning); }
+    .et-sys    { background: rgba(96,104,128,0.2); color: var(--muted); }
+    .event-msg { color: var(--text); line-height: 1.5; }
+    .log-empty { color: var(--muted); font-size: 12px; text-align: center; padding: 20px 0; }
 
     /* ── FOOTER ── */
     footer {
@@ -303,6 +344,7 @@
       font-size: 11px; color: var(--muted);
       border-top: 1px solid rgba(0,255,65,0.1);
       position: relative; z-index: 1;
+      max-width: 1100px; margin: 0 auto;
     }
     footer a { color: var(--primary); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
@@ -310,9 +352,10 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .stat-row    { grid-template-columns: repeat(2,1fr); }
-      .repo-grid   { grid-template-columns: 1fr; }
+      .app-grid    { grid-template-columns: 1fr; }
       .skill-grid  { grid-template-columns: 1fr; }
       .unlock-grid { grid-template-columns: repeat(2,1fr); }
+      .event-entry { grid-template-columns: 44px 80px 1fr; }
     }
     @media (max-width: 480px) {
       .stat-row    { grid-template-columns: repeat(2,1fr); }
@@ -334,6 +377,20 @@
 </header>
 
 <main>
+
+  <!-- ロールバー -->
+  <div class="role-bar">
+    <div class="role-left">
+      <span class="role-icon">🛡️</span>
+      アクセスモード
+      <span class="role-badge badge-owner" id="role-badge">OWNER</span>
+    </div>
+    <select class="role-sel" id="role-sel" onchange="setRole(this.value)">
+      <option value="owner">オーナー</option>
+      <option value="family">家族共有</option>
+      <option value="guest">ゲスト</option>
+    </select>
+  </div>
 
   <!-- STATS -->
   <div class="stat-row">
@@ -357,102 +414,81 @@
 
   <!-- REPOS -->
   <div class="section-title">リポジトリ</div>
-  <div class="repo-grid">
-    <div class="repo-card">
-      <div class="repo-icon">🎯</div>
-      <div class="repo-name">whitehacker-lab</div>
-      <div class="repo-desc">攻撃シミュレーター・CTF・パケット解析・STRIDE 脅威分析。スキルを完了すると bridge 経由で crypto-vault がアンロックされる。</div>
-      <a class="repo-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">→ OPEN</a>
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-icon">🎯</div>
+      <div class="app-name">whitehacker-lab</div>
+      <div class="app-desc">攻撃シミュレーター・CTF・パケット解析・STRIDE 脅威分析。スキルを完了すると crypto-vault がアンロックされる。</div>
+      <div class="app-status">
+        <span class="status-dot s-live"></span>
+        <span style="color:var(--primary);font-size:11px">live</span>
+      </div>
+      <a class="app-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">→ OPEN</a>
     </div>
-    <div class="repo-card hub">
-      <div class="repo-icon">⬡</div>
-      <div class="repo-name">security-hub</div>
-      <div class="repo-desc">3 つのリポジトリを LocalStorage bridge で接続する司令塔。スキル進捗・アンロック状態・イベントログをここで確認できる。</div>
-      <a class="repo-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">→ HERE</a>
+    <div class="app-card hub">
+      <div class="app-icon">⬡</div>
+      <div class="app-name">security-hub</div>
+      <div class="app-desc">3 つのリポジトリを LocalStorage bridge で接続する司令塔。スキル進捗・アンロック状態・イベントログを統合管理。</div>
+      <div class="app-status">
+        <span class="status-dot s-hub"></span>
+        <span style="color:var(--accent);font-size:11px">here</span>
+      </div>
+      <a class="app-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">→ HERE</a>
     </div>
-    <div class="repo-card">
-      <div class="repo-icon">🔐</div>
-      <div class="repo-name">crypto-vault</div>
-      <div class="repo-desc">暗号ツール・パスワードマネージャー・WebAuthn 認証。whitehacker-lab でスキルを習得するとフィーチャーが段階的にアンロックされる。</div>
-      <a class="repo-link" href="https://norinori-jan.github.io/crypto-vault/" target="_blank">→ OPEN</a>
+    <div class="app-card">
+      <div class="app-icon">🔐</div>
+      <div class="app-name">crypto-vault</div>
+      <div class="app-desc">暗号ツール・パスワードマネージャー・WebAuthn 認証。whitehacker-lab でスキルを習得すると段階的にアンロック。</div>
+      <div class="app-status">
+        <span class="status-dot s-idle" id="vault-dot"></span>
+        <span style="font-size:11px" id="vault-status-text">確認中...</span>
+      </div>
+      <button class="app-link" id="vault-btn" onclick="openVault()">→ OPEN</button>
     </div>
   </div>
 
   <!-- SKILL PROGRESS -->
   <div class="section-title">スキル進捗 (whitehacker-lab → bridge)</div>
-  <div class="skill-grid" id="skill-grid">
-    <!-- JS で描画 -->
-  </div>
+  <div class="skill-grid" id="skill-grid"></div>
 
-<!-- ▼ ロール切替 UI ▼ -->
-<div class="section-title">アクセス権限（ロール切替）</div>
-<div style="padding: 16px;">
-  <label for="roleSelect">モード選択:</label>
-  <select id="roleSelect">
-    <option value="owner">オーナー</option>
-    <option value="guest">ゲスト</option>
-    <option value="family">家族共有</option>
-  </select>
-</div>
+  <!-- UNLOCKS -->
+  <div class="section-title">crypto-vault アンロック状況</div>
+  <div class="unlock-grid" id="unlock-grid"></div>
 
-<script>
-  document.getElementById('roleSelect').addEventListener('change', e => {
-    localStorage.setItem('sessionRole', e.target.value);
-    location.reload();
-  });
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('sessionRole') || 'owner';
-    const sel = document.getElementById('roleSelect');
-    if (sel) sel.value = saved;
-  });
-</script>
-<!-- ▲ ロール切替 UI ここまで ▲ -->
-
-
-<!-- UNLOCKS -->
-<div class="section-title">crypto-vault アンロック状況</div>
-<div class="unlock-grid" id="unlock-grid">
-  <!-- JS で描画 -->
-</div>
-
-<!-- EVENT LOG -->
-
- 
+  <!-- EVENT LOG -->
   <div class="section-title">イベントログ</div>
   <div class="event-log" id="event-log">
-    <div class="empty-log">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>
+    <div class="log-empty">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>
   </div>
 
 </main>
 
 <footer>
-  <a href="https://github.com/norinori-jan/security-hub" target="_blank">security-hub</a>
+  <a href="https://github.com/norinori-jan/security-hub"     target="_blank">security-hub</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/norinori-jan/whitehacker-lab" target="_blank">whitehacker-lab</a>
+  <a href="https://github.com/norinori-jan/whitehacker-lab"  target="_blank">whitehacker-lab</a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/norinori-jan/crypto-vault" target="_blank">crypto-vault</a>
+  <a href="https://github.com/norinori-jan/crypto-vault"     target="_blank">crypto-vault</a>
   &nbsp;&nbsp;|&nbsp;&nbsp;
   LocalStorage bridge で接続中
 </footer>
 
 <script>
-// ─── 定数 ───────────────────────────────────────────────────
+// ─── 定数 ────────────────────────────────────────────────────
 const SKILL_DEFS = [
-  { id: 'sqli',             label: 'SQL Injection',        src: 'whitehacker-lab' },
-  { id: 'xss',              label: 'XSS',                  src: 'whitehacker-lab' },
-  { id: 'csrf',             label: 'CSRF',                 src: 'whitehacker-lab' },
-  { id: 'crypto-aes',       label: 'AES-GCM 暗号化',       src: 'whitehacker-lab' },
-  { id: 'crypto-jwt',       label: 'JWT 解析',             src: 'whitehacker-lab' },
-  { id: 'ctf-beginner',     label: 'CTF: Base64',          src: 'whitehacker-lab' },
-  { id: 'ctf-intermediate', label: 'CTF: ROT13',           src: 'whitehacker-lab' },
-  { id: 'ctf-advanced',     label: 'CTF: JWT Flag',        src: 'whitehacker-lab' },
-  { id: 'threat-modeling',  label: 'STRIDE 脅威分析',      src: 'whitehacker-lab' },
-  // xp / badge 系
-  { id: 'xp_Attack',        label: 'Attack XP',            src: 'whitehacker-lab' },
-  { id: 'xp_Crypto',        label: 'Crypto XP',            src: 'whitehacker-lab' },
-  { id: 'xp_Packet',        label: 'Packet XP',            src: 'whitehacker-lab' },
-  { id: 'xp_CTF',           label: 'CTF XP',               src: 'whitehacker-lab' },
+  { id: 'sqli',             label: 'SQL Injection'   },
+  { id: 'xss',              label: 'XSS'             },
+  { id: 'csrf',             label: 'CSRF'            },
+  { id: 'crypto-aes',       label: 'AES-GCM 暗号化'  },
+  { id: 'crypto-jwt',       label: 'JWT 解析'        },
+  { id: 'ctf-beginner',     label: 'CTF: Base64'     },
+  { id: 'ctf-intermediate', label: 'CTF: ROT13'      },
+  { id: 'ctf-advanced',     label: 'CTF: JWT Flag'   },
+  { id: 'threat-modeling',  label: 'STRIDE 脅威分析' },
+  { id: 'xp_Attack',        label: 'Attack XP'       },
+  { id: 'xp_Crypto',        label: 'Crypto XP'       },
+  { id: 'xp_Packet',        label: 'Packet XP'       },
+  { id: 'xp_CTF',           label: 'CTF XP'          },
 ];
 
 const FEATURE_DEFS = [
@@ -464,147 +500,161 @@ const FEATURE_DEFS = [
   { id: 'crypto-vault:aes-tool',          label: 'AES Tool',          icon: '🔑' },
 ];
 
-// ─── bridge から whitehacker_lab_state も読む ────────────────
-function getLabState() {
-  try {
-    const raw = localStorage.getItem('whitehacker_lab_state');
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+const ROLE_META = {
+  owner:  { label: 'OWNER',  cls: 'badge-owner'  },
+  family: { label: 'FAMILY', cls: 'badge-family' },
+  guest:  { label: 'GUEST',  cls: 'badge-guest'  },
+};
+
+// ─── ユーティリティ ───────────────────────────────────────────
+function getLS(key) {
+  try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; }
+  catch { return null; }
 }
 
-// ─── 描画 ────────────────────────────────────────────────────
-function renderAll() {
-  const bridge = typeof SecBridge !== 'undefined' ? SecBridge : null;
+function setRole(val) {
+  try { localStorage.setItem('sessionRole', val); } catch (_) {}
+  renderAll();
+}
 
-  // bridge status
+function openVault() {
+  const role = localStorage.getItem('sessionRole') || 'owner';
+  const url =
+    role === 'guest'  ? 'https://norinori-jan.github.io/crypto-vault/#ctf'   :
+    role === 'family' ? 'https://norinori-jan.github.io/crypto-vault/#learn' :
+                        'https://norinori-jan.github.io/crypto-vault/';
+  window.open(url, '_blank');
+}
+
+// ─── メイン描画 ───────────────────────────────────────────────
+function renderAll() {
+  const bridge   = typeof SecBridge !== 'undefined' ? SecBridge : null;
+  const labState = getLS('whitehacker_lab_state');
+
+  // bridge ステータス
   const dot   = document.getElementById('bridge-dot');
   const label = document.getElementById('bridge-label');
-  if (bridge) {
-    dot.classList.add('live');
-    label.textContent = 'bridge LIVE';
+  if (bridge) { dot.classList.add('live'); label.textContent = 'bridge LIVE'; }
+  else         { dot.classList.remove('live'); label.textContent = 'bridge 未接続'; }
+
+  // ロール
+  const role = localStorage.getItem('sessionRole') || 'owner';
+  const rm   = ROLE_META[role] || ROLE_META.owner;
+  const badge = document.getElementById('role-badge');
+  badge.textContent  = rm.label;
+  badge.className    = 'role-badge ' + rm.cls;
+  document.getElementById('role-sel').value = role;
+
+  // vault ステータス
+  const vaultUnlocks = bridge ? bridge.listUnlocks().filter(u => u.startsWith('crypto-vault')).length : 0;
+  const vaultDot     = document.getElementById('vault-dot');
+  const vaultTxt     = document.getElementById('vault-status-text');
+  if (vaultUnlocks > 0) {
+    vaultDot.className    = 'status-dot s-live';
+    vaultTxt.textContent  = `${vaultUnlocks} 機能アンロック済み`;
+    vaultTxt.style.color  = 'var(--primary)';
   } else {
-    label.textContent = 'bridge 未接続';
+    vaultDot.className    = 'status-dot s-idle';
+    vaultTxt.textContent  = 'スキル取得でアンロック';
+    vaultTxt.style.color  = 'var(--muted)';
   }
 
   const progress = bridge ? bridge.listProgress() : {};
-  const labState = getLabState();
-
-  // XP は whitehacker_lab_state から直接取得
-  const totalXP = labState ? (labState.xp || 0) : 0;
+  const events   = bridge ? bridge.getEvents(200)  : [];
+  const xp       = labState ? (labState.xp || 0)   : 0;
 
   // stats
-  const skillCount   = Object.keys(progress).length;
-  const unlockCount  = bridge ? bridge.listUnlocks().length : 0;
-  const events       = bridge ? bridge.getEvents(200) : [];
-
-  document.getElementById('stat-skills').textContent  = skillCount;
-  document.getElementById('stat-unlocks').textContent = unlockCount;
-  document.getElementById('stat-xp').textContent      = totalXP;
+  document.getElementById('stat-skills').textContent  = Object.keys(progress).length;
+  document.getElementById('stat-unlocks').textContent = bridge ? bridge.listUnlocks().length : 0;
+  document.getElementById('stat-xp').textContent      = xp;
   document.getElementById('stat-events').textContent  = events.length;
 
-  // skill grid
-  const skillGrid = document.getElementById('skill-grid');
-  skillGrid.innerHTML = '';
-  SKILL_DEFS.forEach(def => {
+  // スキルグリッド
+  const sg = document.getElementById('skill-grid');
+  sg.innerHTML = SKILL_DEFS.map(def => {
     const done  = !!progress[def.id];
     const score = done ? (progress[def.id].score ?? null) : null;
-    const pct   = done ? 100 : 0;
-
-    skillGrid.innerHTML += `
+    return `
       <div class="skill-item">
         <div class="skill-header">
           <span class="skill-name">${def.label}</span>
-          <span class="skill-badge ${done ? 'done' : 'locked'}">${done ? '✓ 完了' : '未着手'}</span>
+          <span class="skill-badge ${done ? 'badge-done' : 'badge-lock'}">${done ? '✓ 完了' : '未着手'}</span>
         </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
-        ${score !== null ? `<div style="font-size:10px;color:var(--muted);margin-top:4px">スコア: ${score}</div>` : ''}
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${done ? 100 : 0}%"></div>
+        </div>
+        ${score !== null ? `<div class="skill-score">スコア: ${score}</div>` : ''}
       </div>`;
-  });
+  }).join('');
 
-  // unlock grid
-  const unlockGrid = document.getElementById('unlock-grid');
-  unlockGrid.innerHTML = '';
-  FEATURE_DEFS.forEach(f => {
+  // アンロックグリッド
+  const ug = document.getElementById('unlock-grid');
+  ug.innerHTML = FEATURE_DEFS.map(f => {
     const ok = bridge ? bridge.hasFeature(f.id) : false;
-    unlockGrid.innerHTML += `
+    return `
       <div class="unlock-item ${ok ? 'unlocked' : ''}">
         <div class="unlock-icon">${f.icon}</div>
-        <div>
+        <div class="unlock-info">
           <div class="unlock-name">${f.label}</div>
           <div class="unlock-src">crypto-vault</div>
         </div>
       </div>`;
-  });
+  }).join('');
 
-  // event log
+  // イベントログ
   const logEl = document.getElementById('event-log');
-  if (events.length === 0) {
-    logEl.innerHTML = '<div class="empty-log">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>';
-  } else {
-    logEl.innerHTML = events.map(ev => {
-      const ts  = new Date(ev.ts).toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
-      const cls = ev.type.startsWith('skill') ? 'skill'
-                : ev.type.startsWith('badge') ? 'badge'
-                : ev.type.includes('unlock')  ? 'unlock'
-                : 'system';
-      const msg = ev.type === 'skill_complete'
-        ? `スキル完了: <strong>${ev.skillId}</strong>${ev.score != null ? ` (${ev.score}点)` : ''}`
-        : ev.type === 'skill_reset'
-        ? `リセット: ${ev.skillId}`
-        : ev.type === 'vault_meta_updated'
-        ? `vault_meta 更新 (スキル数: ${ev.completedSkills ?? '-'})`
-        : ev.type === 'clear_all'
-        ? 'データ全消去'
-        : JSON.stringify(ev);
-      return `<div class="event-entry">
+  if (!events.length) {
+    logEl.innerHTML = '<div class="log-empty">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>';
+    return;
+  }
+  logEl.innerHTML = events.slice(0, 50).map(ev => {
+    const ts  = new Date(ev.ts).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+    const cls = ev.type.startsWith('skill')          ? 'et-skill'
+              : ev.type.startsWith('badge')          ? 'et-badge'
+              : ev.type.includes('unlock')           ? 'et-unlock'
+              : 'et-sys';
+    const msg = ev.type === 'skill_complete'
+      ? `スキル完了: <strong>${ev.skillId}</strong>${ev.score != null ? ` (${ev.score}点)` : ''}`
+      : ev.type === 'skill_reset'     ? `リセット: ${ev.skillId}`
+      : ev.type === 'vault_meta_updated' ? `vault_meta 更新 (スキル数: ${ev.completedSkills ?? '-'})`
+      : ev.type === 'clear_all'       ? 'データ全消去'
+      : JSON.stringify(ev);
+    return `
+      <div class="event-entry">
         <span class="event-ts">${ts}</span>
         <span class="event-type ${cls}">${ev.type}</span>
         <span class="event-msg">${msg}</span>
       </div>`;
-    }).join('');
-  }
+  }).join('');
 }
 
-// ─── 起動 & 自動更新 ─────────────────────────────────────────
+// ─── 起動 ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   renderAll();
-
-  // bridge イベント受信で即時更新
   window.addEventListener('secbridge:vault_meta_updated', renderAll);
-
-  // LocalStorage 変化を監視（別タブの whitehacker-lab から）
-  window.addEventListener('storage', (e) => {
-    if (e.key && e.key.startsWith('secbridge')) renderAll();
-    if (e.key === 'whitehacker_lab_state') renderAll();
+  window.addEventListener('storage', e => {
+    if (e.key && (e.key.startsWith('secbridge') || e.key === 'whitehacker_lab_state')) renderAll();
   });
-
-  // 5秒ごとにポーリング（フォールバック）
   setInterval(renderAll, 5000);
 });
 </script>
 
-<!-- ★ ここから追加：LABボタンのロール制御 -->
+<!-- ロール別 vault-btn 制御 -->
 <script type="module">
-import { getSessionRole } from './bridge.js';
-
-document.addEventListener('DOMContentLoaded', () => {
-  const role = getSessionRole();
-  const labBtn = document.querySelector('[data-app="vault-lab"]');
-  if (!labBtn) return;
-
-  if (role === 'guest') {
-    labBtn.textContent = '🏴 CTF Only';
-    labBtn.onclick = () => window.open('crypto-vault/vault-lab.html#ctf', '_blank');
-  } else if (role === 'family') {
-    labBtn.textContent = '👨‍👩‍👧‍👦 学習モード';
-    labBtn.onclick = () => window.open('whitehacker-lab/index.html#learn', '_blank');
-  } else {
-    labBtn.textContent = '🧪 LAB';
-    labBtn.onclick = () => window.open('crypto-vault/vault-lab.html', '_blank');
-  }
-});
+  import { getSessionRole } from './bridge.js';
+  document.addEventListener('DOMContentLoaded', () => {
+    const role   = getSessionRole ? getSessionRole() : (localStorage.getItem('sessionRole') || 'owner');
+    const vBtn   = document.getElementById('vault-btn');
+    if (!vBtn) return;
+    if (role === 'guest') {
+      vBtn.textContent = '🏴 CTF Only';
+    } else if (role === 'family') {
+      vBtn.textContent = '👨‍👩‍👧 学習モード';
+    } else {
+      vBtn.textContent = '→ OPEN';
+    }
+  });
 </script>
-<!-- ★ 追加ここまで -->
 
 </body>
 </html>
