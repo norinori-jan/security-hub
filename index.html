@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Security Hub — 司令塔</title>
+  <title>Security Hub  E司令塁E/title>
   <script src="https://norinori-jan.github.io/security-hub/bridge.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700&display=swap');
@@ -378,17 +378,16 @@
 
 <main>
 
-  <!-- ロールバー -->
+  <!-- ロールバ�E -->
   <div class="role-bar">
     <div class="role-left">
-      <span class="role-icon">🛡️</span>
-      アクセスモード
-      <span class="role-badge badge-owner" id="role-badge">OWNER</span>
+      <span class="role-icon">🛡�E�E/span>
+      アクセスモーチE      <span class="role-badge badge-owner" id="role-badge">OWNER</span>
     </div>
     <select class="role-sel" id="role-sel" onchange="setRole(this.value)">
-      <option value="owner">オーナー</option>
-      <option value="family">家族共有</option>
-      <option value="guest">ゲスト</option>
+      <option value="owner">オーナ�E</option>
+      <option value="family">家族�E朁E/option>
+      <option value="guest">ゲスチE/option>
     </select>
   </div>
 
@@ -396,15 +395,15 @@
   <div class="stat-row">
     <div class="stat-card">
       <div class="stat-val" id="stat-skills">0</div>
-      <div class="stat-lbl">完了スキル</div>
+      <div class="stat-lbl">完亁E��キル</div>
     </div>
     <div class="stat-card">
       <div class="stat-val" id="stat-unlocks">0</div>
-      <div class="stat-lbl">アンロック済み</div>
+      <div class="stat-lbl">アンロチE��済み</div>
     </div>
     <div class="stat-card">
       <div class="stat-val" id="stat-xp">0</div>
-      <div class="stat-lbl">総 XP</div>
+      <div class="stat-lbl">緁EXP</div>
     </div>
     <div class="stat-card">
       <div class="stat-val" id="stat-events">0</div>
@@ -418,47 +417,47 @@
     <div class="app-card">
       <div class="app-icon">🎯</div>
       <div class="app-name">whitehacker-lab</div>
-      <div class="app-desc">攻撃シミュレーター・CTF・パケット解析・STRIDE 脅威分析。スキルを完了すると crypto-vault がアンロックされる。</div>
+      <div class="app-desc">攻撁E��ミュレーター・CTF・パケチE��解析�ESTRIDE 脁E���E析。スキルを完亁E��ると crypto-vault がアンロチE��される、E/div>
       <div class="app-status">
         <span class="status-dot s-live"></span>
         <span style="color:var(--primary);font-size:11px">live</span>
       </div>
-      <a class="app-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">→ OPEN</a>
+      <a class="app-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">ↁEOPEN</a>
     </div>
     <div class="app-card hub">
       <div class="app-icon">⬡</div>
       <div class="app-name">security-hub</div>
-      <div class="app-desc">3 つのリポジトリを LocalStorage bridge で接続する司令塔。スキル進捗・アンロック状態・イベントログを統合管理。</div>
+      <div class="app-desc">3 つのリポジトリめELocalStorage bridge で接続する司令塔。スキル進捗�EアンロチE��状態�Eイベントログを統合管琁E��E/div>
       <div class="app-status">
         <span class="status-dot s-hub"></span>
         <span style="color:var(--accent);font-size:11px">here</span>
       </div>
-      <a class="app-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">→ HERE</a>
+      <a class="app-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">ↁEHERE</a>
     </div>
     <div class="app-card">
       <div class="app-icon">🔐</div>
       <div class="app-name">crypto-vault</div>
-      <div class="app-desc">暗号ツール・パスワードマネージャー・WebAuthn 認証。whitehacker-lab でスキルを習得すると段階的にアンロック。</div>
+      <div class="app-desc">暗号チE�Eル・パスワード�Eネ�Eジャー・WebAuthn 認証。whitehacker-lab でスキルを習得すると段階的にアンロチE��、E/div>
       <div class="app-status">
         <span class="status-dot s-idle" id="vault-dot"></span>
         <span style="font-size:11px" id="vault-status-text">確認中...</span>
       </div>
-      <button class="app-link" id="vault-btn" onclick="openVault()">→ OPEN</button>
+      <button class="app-link" id="vault-btn" onclick="openVault()">ↁEOPEN</button>
     </div>
   </div>
 
   <!-- SKILL PROGRESS -->
-  <div class="section-title">スキル進捗 (whitehacker-lab → bridge)</div>
+  <div class="section-title">スキル進捁E(whitehacker-lab ↁEbridge)</div>
   <div class="skill-grid" id="skill-grid"></div>
 
   <!-- UNLOCKS -->
-  <div class="section-title">crypto-vault アンロック状況</div>
+  <div class="section-title">crypto-vault アンロチE��状況E/div>
   <div class="unlock-grid" id="unlock-grid"></div>
 
   <!-- EVENT LOG -->
   <div class="section-title">イベントログ</div>
   <div class="event-log" id="event-log">
-    <div class="log-empty">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>
+    <div class="log-empty">イベントなぁE Ewhitehacker-lab でチャレンジを完亁E��ると記録されまぁE/div>
   </div>
 
 </main>
@@ -479,12 +478,12 @@ const SKILL_DEFS = [
   { id: 'sqli',             label: 'SQL Injection'   },
   { id: 'xss',              label: 'XSS'             },
   { id: 'csrf',             label: 'CSRF'            },
-  { id: 'crypto-aes',       label: 'AES-GCM 暗号化'  },
-  { id: 'crypto-jwt',       label: 'JWT 解析'        },
+  { id: 'crypto-aes',       label: 'AES-GCM 暗号匁E  },
+  { id: 'crypto-jwt',       label: 'JWT 解极E        },
   { id: 'ctf-beginner',     label: 'CTF: Base64'     },
   { id: 'ctf-intermediate', label: 'CTF: ROT13'      },
   { id: 'ctf-advanced',     label: 'CTF: JWT Flag'   },
-  { id: 'threat-modeling',  label: 'STRIDE 脅威分析' },
+  { id: 'threat-modeling',  label: 'STRIDE 脁E���E极E },
   { id: 'xp_Attack',        label: 'Attack XP'       },
   { id: 'xp_Crypto',        label: 'Crypto XP'       },
   { id: 'xp_Packet',        label: 'Packet XP'       },
@@ -495,7 +494,7 @@ const FEATURE_DEFS = [
   { id: 'crypto-vault:packet-analyzer',   label: 'Packet Analyzer',   icon: '📡' },
   { id: 'crypto-vault:attack-simulator',  label: 'Attack Simulator',  icon: '🎯' },
   { id: 'crypto-vault:ctf-challenge',     label: 'CTF Challenge',     icon: '🚩' },
-  { id: 'crypto-vault:threat-model',      label: 'Threat Model',      icon: '🛡️' },
+  { id: 'crypto-vault:threat-model',      label: 'Threat Model',      icon: '🛡�E�E },
   { id: 'crypto-vault:crypto-playground', label: 'Crypto Playground', icon: '🔐' },
   { id: 'crypto-vault:aes-tool',          label: 'AES Tool',          icon: '🔑' },
 ];
@@ -506,7 +505,7 @@ const ROLE_META = {
   guest:  { label: 'GUEST',  cls: 'badge-guest'  },
 };
 
-// ─── ユーティリティ ───────────────────────────────────────────
+// ─── ユーチE��リチE�� ───────────────────────────────────────────
 function getLS(key) {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : null; }
   catch { return null; }
@@ -515,6 +514,14 @@ function getLS(key) {
 function setRole(val) {
   try { localStorage.setItem('sessionRole', val); } catch (_) {}
   renderAll();
+  // iCloud/quick-ref �{�^���ǉ�
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
+  bar.innerHTML = `
+    <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
+    <button onclick="sendToQuickRef()" style="padding:8px 14px;background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3);border-radius:10px;color:#00d9ff;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? quick-ref</button>
+  `;
+  document.body.appendChild(bar);
 }
 
 function openVault() {
@@ -531,11 +538,11 @@ function renderAll() {
   const bridge   = typeof SecBridge !== 'undefined' ? SecBridge : null;
   const labState = getLS('whitehacker_lab_state');
 
-  // bridge ステータス
+  // bridge スチE�Eタス
   const dot   = document.getElementById('bridge-dot');
   const label = document.getElementById('bridge-label');
   if (bridge) { dot.classList.add('live'); label.textContent = 'bridge LIVE'; }
-  else         { dot.classList.remove('live'); label.textContent = 'bridge 未接続'; }
+  else         { dot.classList.remove('live'); label.textContent = 'bridge 未接綁E; }
 
   // ロール
   const role = localStorage.getItem('sessionRole') || 'owner';
@@ -545,17 +552,17 @@ function renderAll() {
   badge.className    = 'role-badge ' + rm.cls;
   document.getElementById('role-sel').value = role;
 
-  // vault ステータス
+  // vault スチE�Eタス
   const vaultUnlocks = bridge ? bridge.listUnlocks().filter(u => u.startsWith('crypto-vault')).length : 0;
   const vaultDot     = document.getElementById('vault-dot');
   const vaultTxt     = document.getElementById('vault-status-text');
   if (vaultUnlocks > 0) {
     vaultDot.className    = 'status-dot s-live';
-    vaultTxt.textContent  = `${vaultUnlocks} 機能アンロック済み`;
+    vaultTxt.textContent  = `${vaultUnlocks} 機�EアンロチE��済み`;
     vaultTxt.style.color  = 'var(--primary)';
   } else {
     vaultDot.className    = 'status-dot s-idle';
-    vaultTxt.textContent  = 'スキル取得でアンロック';
+    vaultTxt.textContent  = 'スキル取得でアンロチE��';
     vaultTxt.style.color  = 'var(--muted)';
   }
 
@@ -569,7 +576,7 @@ function renderAll() {
   document.getElementById('stat-xp').textContent      = xp;
   document.getElementById('stat-events').textContent  = events.length;
 
-  // スキルグリッド
+  // スキルグリチE��
   const sg = document.getElementById('skill-grid');
   sg.innerHTML = SKILL_DEFS.map(def => {
     const done  = !!progress[def.id];
@@ -578,7 +585,7 @@ function renderAll() {
       <div class="skill-item">
         <div class="skill-header">
           <span class="skill-name">${def.label}</span>
-          <span class="skill-badge ${done ? 'badge-done' : 'badge-lock'}">${done ? '✓ 完了' : '未着手'}</span>
+          <span class="skill-badge ${done ? 'badge-done' : 'badge-lock'}">${done ? '✁E完亁E : '未着扁E}</span>
         </div>
         <div class="bar-track">
           <div class="bar-fill" style="width:${done ? 100 : 0}%"></div>
@@ -587,7 +594,7 @@ function renderAll() {
       </div>`;
   }).join('');
 
-  // アンロックグリッド
+  // アンロチE��グリチE��
   const ug = document.getElementById('unlock-grid');
   ug.innerHTML = FEATURE_DEFS.map(f => {
     const ok = bridge ? bridge.hasFeature(f.id) : false;
@@ -604,7 +611,7 @@ function renderAll() {
   // イベントログ
   const logEl = document.getElementById('event-log');
   if (!events.length) {
-    logEl.innerHTML = '<div class="log-empty">イベントなし — whitehacker-lab でチャレンジを完了すると記録されます</div>';
+    logEl.innerHTML = '<div class="log-empty">イベントなぁE Ewhitehacker-lab でチャレンジを完亁E��ると記録されまぁE/div>';
     return;
   }
   logEl.innerHTML = events.slice(0, 50).map(ev => {
@@ -614,10 +621,10 @@ function renderAll() {
               : ev.type.includes('unlock')           ? 'et-unlock'
               : 'et-sys';
     const msg = ev.type === 'skill_complete'
-      ? `スキル完了: <strong>${ev.skillId}</strong>${ev.score != null ? ` (${ev.score}点)` : ''}`
-      : ev.type === 'skill_reset'     ? `リセット: ${ev.skillId}`
+      ? `スキル完亁E <strong>${ev.skillId}</strong>${ev.score != null ? ` (${ev.score}点)` : ''}`
+      : ev.type === 'skill_reset'     ? `リセチE��: ${ev.skillId}`
       : ev.type === 'vault_meta_updated' ? `vault_meta 更新 (スキル数: ${ev.completedSkills ?? '-'})`
-      : ev.type === 'clear_all'       ? 'データ全消去'
+      : ev.type === 'clear_all'       ? 'チE�Eタ全消去'
       : JSON.stringify(ev);
     return `
       <div class="event-entry">
@@ -628,12 +635,62 @@ function renderAll() {
   }).join('');
 }
 
-// ─── 起動 ─────────────────────────────────────────────────────
+// ─── 起勁E─────────────────────────────────────────────────────
+// ���� iCloud �ۑ� ��������������������������������������������������������������������
+function saveToiCloud() {
+  const data = {
+    source: 'security-hub', exportedAt: Date.now(),
+    unlocks:  JSON.parse(localStorage.getItem('secbridge_unlocks')  || '[]'),
+    progress: JSON.parse(localStorage.getItem('secbridge_progress') || '{}'),
+    events:   JSON.parse(localStorage.getItem('secbridge_events')   || '[]')
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const filename = `security-hub-${new Date().toISOString().slice(0,10)}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  localStorage.setItem('sh_icloud_last', JSON.stringify({savedAt:Date.now(),filename}));
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent))
+    setTimeout(()=>alert(`"${filename}"\n�t�@�C���A�v�� �� iCloud Drive �Ɉړ����Ă��������B`),500);
+}
+
+function sendToQuickRef() {
+  const progress = JSON.parse(localStorage.getItem('secbridge_progress')||'{}');
+  const skills = Object.keys(progress).slice(0,8);
+  const payload = {
+    source:'security-hub', destination:'quick-ref',
+    title:`�Z�L�����e�B�w�K���O ${new Date().toLocaleDateString('ja-JP')}`,
+    tags:['�Z�L�����e�B','�w�K'],
+    body:`�����X�L��: ${skills.join(', ')||'�Ȃ�'}`,
+    fields: skills.map(k=>({key:k, value:`�X�R�A: ${progress[k].score??'-'}`})),
+    date: new Date().toISOString()
+  };
+  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('?? quick-ref�ɑ��M���܂���'); }
+  catch(e) { alert('���M���s: '+e.message); }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderAll();
+  // iCloud/quick-ref �{�^���ǉ�
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
+  bar.innerHTML = `
+    <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
+    <button onclick="sendToQuickRef()" style="padding:8px 14px;background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3);border-radius:10px;color:#00d9ff;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? quick-ref</button>
+  `;
+  document.body.appendChild(bar);
   window.addEventListener('secbridge:vault_meta_updated', renderAll);
   window.addEventListener('storage', e => {
     if (e.key && (e.key.startsWith('secbridge') || e.key === 'whitehacker_lab_state')) renderAll();
+  // iCloud/quick-ref �{�^���ǉ�
+  const bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
+  bar.innerHTML = `
+    <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
+    <button onclick="sendToQuickRef()" style="padding:8px 14px;background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3);border-radius:10px;color:#00d9ff;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? quick-ref</button>
+  `;
+  document.body.appendChild(bar);
   });
   setInterval(renderAll, 5000);
 });
@@ -642,16 +699,50 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- ロール別 vault-btn 制御 -->
 <script type="module">
   import { getSessionRole } from './bridge.js';
-  document.addEventListener('DOMContentLoaded', () => {
+  // ���� iCloud �ۑ� ��������������������������������������������������������������������
+function saveToiCloud() {
+  const data = {
+    source: 'security-hub', exportedAt: Date.now(),
+    unlocks:  JSON.parse(localStorage.getItem('secbridge_unlocks')  || '[]'),
+    progress: JSON.parse(localStorage.getItem('secbridge_progress') || '{}'),
+    events:   JSON.parse(localStorage.getItem('secbridge_events')   || '[]')
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const filename = `security-hub-${new Date().toISOString().slice(0,10)}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  localStorage.setItem('sh_icloud_last', JSON.stringify({savedAt:Date.now(),filename}));
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent))
+    setTimeout(()=>alert(`"${filename}"\n�t�@�C���A�v�� �� iCloud Drive �Ɉړ����Ă��������B`),500);
+}
+
+function sendToQuickRef() {
+  const progress = JSON.parse(localStorage.getItem('secbridge_progress')||'{}');
+  const skills = Object.keys(progress).slice(0,8);
+  const payload = {
+    source:'security-hub', destination:'quick-ref',
+    title:`�Z�L�����e�B�w�K���O ${new Date().toLocaleDateString('ja-JP')}`,
+    tags:['�Z�L�����e�B','�w�K'],
+    body:`�����X�L��: ${skills.join(', ')||'�Ȃ�'}`,
+    fields: skills.map(k=>({key:k, value:`�X�R�A: ${progress[k].score??'-'}`})),
+    date: new Date().toISOString()
+  };
+  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('?? quick-ref�ɑ��M���܂���'); }
+  catch(e) { alert('���M���s: '+e.message); }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     const role   = getSessionRole ? getSessionRole() : (localStorage.getItem('sessionRole') || 'owner');
     const vBtn   = document.getElementById('vault-btn');
     if (!vBtn) return;
     if (role === 'guest') {
       vBtn.textContent = '🏴 CTF Only';
     } else if (role === 'family') {
-      vBtn.textContent = '👨‍👩‍👧 学習モード';
+      vBtn.textContent = '👨‍👩‍👧 学習モーチE;
     } else {
-      vBtn.textContent = '→ OPEN';
+      vBtn.textContent = 'ↁEOPEN';
     }
   });
 </script>
