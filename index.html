@@ -381,7 +381,7 @@
   <!-- ロールバー -->
   <div class="role-bar">
     <div class="role-left">
-      <span class="role-icon">🛡・・/span>
+      <span class="role-icon">🛡️</span>
       アクセスモード
       <span class="role-badge badge-owner" id="role-badge">OWNER</span>
     </div>
@@ -423,7 +423,7 @@
         <span class="status-dot s-live"></span>
         <span style="color:var(--primary);font-size:11px">live</span>
       </div>
-      <a class="app-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">ↁEOPEN</a>
+      <a class="app-link" href="https://norinori-jan.github.io/whitehacker-lab/" target="_blank">→ OPEN</a>
     </div>
     <div class="app-card hub">
       <div class="app-icon">⬡</div>
@@ -433,7 +433,7 @@
         <span class="status-dot s-hub"></span>
         <span style="color:var(--accent);font-size:11px">here</span>
       </div>
-      <a class="app-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">ↁEHERE</a>
+      <a class="app-link" href="https://norinori-jan.github.io/security-hub/" target="_blank">→ HERE</a>
     </div>
     <div class="app-card">
       <div class="app-icon">🔐</div>
@@ -443,7 +443,7 @@
         <span class="status-dot s-idle" id="vault-dot"></span>
         <span style="font-size:11px" id="vault-status-text">確認中...</span>
       </div>
-      <button class="app-link" id="vault-btn" onclick="openVault()">ↁEOPEN</button>
+      <button class="app-link" id="vault-btn" onclick="openVault()">→ OPEN</button>
     </div>
   </div>
 
@@ -495,7 +495,7 @@ const FEATURE_DEFS = [
   { id: 'crypto-vault:packet-analyzer',   label: 'Packet Analyzer',   icon: '📡' },
   { id: 'crypto-vault:attack-simulator',  label: 'Attack Simulator',  icon: '🎯' },
   { id: 'crypto-vault:ctf-challenge',     label: 'CTF Challenge',     icon: '🚩' },
-  { id: 'crypto-vault:threat-model',      label: 'Threat Model',      icon: '🛡・・ },
+  { id: 'crypto-vault:threat-model',      label: 'Threat Model',      icon: '🛡️' },
   { id: 'crypto-vault:crypto-playground', label: 'Crypto Playground', icon: '🔐' },
   { id: 'crypto-vault:aes-tool',          label: 'AES Tool',          icon: '🔑' },
 ];
@@ -743,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (role === 'family') {
       vBtn.textContent = '👨‍👩‍👧 学習モード';
     } else {
-      vBtn.textContent = 'ↁEOPEN';
+      vBtn.textContent = '→ OPEN';
     }
   });
 </script>
