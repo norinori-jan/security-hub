@@ -412,6 +412,17 @@
     </div>
   </div>
 
+  <!-- 使い分け -->
+  <div class="section-title">どれを使う？</div>
+  <div class="app-grid">
+    <div class="app-card"><div class="app-icon">🔐</div><div class="app-name">パスワードを守りたい</div>
+      <div class="app-desc">→ <b>crypto-vault の金庫</b>。マスターパスワード1つで、ID・パスワード・秘密のメモを暗号化して保管。普段使いはこれだけ。</div></div>
+    <div class="app-card"><div class="app-icon">🎓</div><div class="app-name">しくみを学びたい</div>
+      <div class="app-desc">→ <b>crypto-vault の学習(lab)</b>で暗号・攻撃を体験し、<b>whitehacker-lab</b> で攻撃シミュレーター・CTF・STRIDE を深掘り。</div></div>
+    <div class="app-card hub"><div class="app-icon">⬡</div><div class="app-name">進み具合を見たい</div>
+      <div class="app-desc">→ <b>この security-hub</b>。学習の進捗・アンロック・イベントログだけを集めた司令塔（金庫の中身は一切読みません）。</div></div>
+  </div>
+
   <!-- REPOS -->
   <div class="section-title">リポジトリ</div>
   <div class="app-grid">
@@ -438,12 +449,13 @@
     <div class="app-card">
       <div class="app-icon">🔐</div>
       <div class="app-name">crypto-vault</div>
-      <div class="app-desc">暗号ツール・パスワードマネージャー・WebAuthn 認証。whitehacker-lab でスキルを習得すると段階的にアンロックされる。</div>
+      <div class="app-desc"><b>金庫</b>（index）＝ パスワード・秘密のメモを AES-256-GCM で保管（普段使い）。<b>学習</b>（lab）＝ 攻撃・暗号・CTF の学習ページ。スキルの進み具合に応じて機能がアンロックされる。金庫と学習は別ページ・別データ。</div>
       <div class="app-status">
         <span class="status-dot s-idle" id="vault-dot"></span>
         <span style="font-size:11px" id="vault-status-text">確認中...</span>
       </div>
-      <button class="app-link" id="vault-btn" onclick="openVault()">→ OPEN</button>
+      <button class="app-link" id="vault-btn" onclick="openVault()">→ 金庫を開く</button>
+      <button class="app-link" id="lab-btn" onclick="openLab()" style="margin-top:6px">→ 学習(lab)を開く</button>
     </div>
   </div>
 
@@ -516,7 +528,8 @@ function setRole(val) {
   try { localStorage.setItem('sessionRole', val); } catch (_) {}
   renderAll();
   // iCloud/quick-ref ボタン追加
-  const bar = document.createElement('div');
+  document.querySelectorAll('.sh-actions-bar').forEach(e => e.remove());
+  const bar = document.createElement('div'); bar.className = 'sh-actions-bar';
   bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
   bar.innerHTML = `
     <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
@@ -528,10 +541,13 @@ function setRole(val) {
 function openVault() {
   const role = localStorage.getItem('sessionRole') || 'owner';
   const url =
-    role === 'guest'  ? 'https://norinori-jan.github.io/crypto-vault/#ctf'   :
-    role === 'family' ? 'https://norinori-jan.github.io/crypto-vault/#learn' :
+    role === 'guest'  ? 'https://norinori-jan.github.io/crypto-vault/lab.html#ctf'   :
+    role === 'family' ? 'https://norinori-jan.github.io/crypto-vault/lab.html#learn' :
                         'https://norinori-jan.github.io/crypto-vault/';
   window.open(url, '_blank');
+}
+function openLab() {
+  window.open('https://norinori-jan.github.io/crypto-vault/lab.html', '_blank');
 }
 
 // ─── メイン描画 ───────────────────────────────────────────────
@@ -667,14 +683,15 @@ function sendToQuickRef() {
     fields: skills.map(k=>({key:k, value:`スコア: ${progress[k].score??'-'}`})),
     date: new Date().toISOString()
   };
-  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('?? quick-refに送信しました'); }
+  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('📚 quick-refに送信しました'); }
   catch(e) { alert('送信失敗: '+e.message); }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderAll();
   // iCloud/quick-ref ボタン追加
-  const bar = document.createElement('div');
+  document.querySelectorAll('.sh-actions-bar').forEach(e => e.remove());
+  const bar = document.createElement('div'); bar.className = 'sh-actions-bar';
   bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
   bar.innerHTML = `
     <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
@@ -685,7 +702,8 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('storage', e => {
     if (e.key && (e.key.startsWith('secbridge') || e.key === 'whitehacker_lab_state')) renderAll();
   // iCloud/quick-ref ボタン追加
-  const bar = document.createElement('div');
+  document.querySelectorAll('.sh-actions-bar').forEach(e => e.remove());
+  const bar = document.createElement('div'); bar.className = 'sh-actions-bar';
   bar.style.cssText = 'position:fixed;bottom:calc(env(safe-area-inset-bottom)+12px);right:16px;display:flex;flex-direction:column;gap:6px;z-index:999;';
   bar.innerHTML = `
     <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:JetBrains Mono,monospace;">?? iCloud</button>
@@ -730,7 +748,7 @@ function sendToQuickRef() {
     fields: skills.map(k=>({key:k, value:`スコア: ${progress[k].score??'-'}`})),
     date: new Date().toISOString()
   };
-  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('?? quick-refに送信しました'); }
+  try { localStorage.setItem('is_transfer',JSON.stringify(payload)); alert('📚 quick-refに送信しました'); }
   catch(e) { alert('送信失敗: '+e.message); }
 }
 
@@ -743,8 +761,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (role === 'family') {
       vBtn.textContent = '👨‍👩‍👧 学習モード';
     } else {
-      vBtn.textContent = '→ OPEN';
+      vBtn.textContent = '→ 金庫を開く';
     }
+    const lBtn = document.getElementById('lab-btn');
+    if (lBtn && role !== 'owner') lBtn.style.display = 'none';
   });
 </script>
 
