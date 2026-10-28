@@ -441,6 +441,12 @@
     </div>
   </div>
 
+  <!-- 金庫の健康診断（件数だけ。パスワードの中身は受け取りません） -->
+  <div class="section-title">🔐 金庫の健康診断（件数だけ）</div>
+  <div class="app-card" id="vault-health" style="margin-bottom:14px"><div class="app-desc">まだ診断していません。金庫の「🚨 緊急」→「🔎 調べる」を押すと、ここに件数が出ます。</div><a class="app-link" href="https://norinori-jan.github.io/crypto-vault/#incident" target="_blank">→ 金庫で調べる</a></div>
+  <div class="section-title">🛡 個人情報ガード（守りの進み具合）</div>
+  <div class="app-card" id="leak-shield" style="margin-bottom:14px"><div class="app-desc">まだ始めていません。「個人情報ガード」で、★最優先から1日1つずつチェックしましょう。</div><a class="app-link" href="https://norinori-jan.github.io/leak-shield/" target="_blank">→ 個人情報ガードを開く</a></div>
+
   <!-- 使い分け -->
   <div class="section-title">どれを使う？</div>
   <div class="app-grid">
@@ -716,8 +722,29 @@ function sendToQuickRef() {
   catch(e) { alert('送信失敗: '+e.message); }
 }
 
+function renderVaultHealth(){
+  const el=document.getElementById('vault-health');if(!el)return;
+  let h=null;try{h=JSON.parse(localStorage.getItem('secbridge_vault_health')||'null')}catch(e){}
+  if(!h||!h.t)return;
+  const days=Math.floor((Date.now()-h.t)/86400000),old=days>=30,bad=h.leaked>0||h.reuse>0;
+  const c=(n,l,warn)=>'<div style="flex:1;min-width:70px;text-align:center"><div style="font-size:24px;font-weight:800;color:'+(warn&&n>0?'#ff4466':'#00ff88')+'">'+n+'</div><div style="font-size:11px;color:#8a8ab0">'+l+'</div></div>';
+  el.innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap">'+c(h.total,'登録',false)+c(h.leaked,'漏洩あり',true)+c(h.reuse,'使い回し',true)+c(h.weak,'短い',true)+'</div>'
+   +'<div class="app-desc" style="margin-top:8px">最後に調べた日：'+new Date(h.t).toLocaleDateString('ja-JP')+'（'+(days===0?'今日':days+'日前')+'）'+(old?' ⚠ 30日以上たっています。もう一度調べましょう。':'')+(bad?' ⚠ 危ないものがあります。金庫の「アカウント見直し」で上から直してください。':' ✓ 今のところ問題なし')+'</div>'
+   +'<a class="app-link" href="https://norinori-jan.github.io/crypto-vault/#incident" target="_blank">→ 金庫で調べ直す</a>';
+}
+function renderLeakShield(){
+  const el=document.getElementById('leak-shield');if(!el)return;
+  let h=null;try{h=JSON.parse(localStorage.getItem('secbridge_leak_shield')||'null')}catch(e){}
+  if(!h||!h.t||!h.total)return;
+  const pct=Math.round(h.done/h.total*100),days=Math.floor((Date.now()-h.t)/86400000),topOk=h.topDone>=h.topTotal;
+  el.innerHTML='<div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:28px;font-weight:800;color:'+(topOk?'#00ff88':'#ffaa00')+'">'+h.done+'/'+h.total+'</span><span style="font-size:12px;color:#8a8ab0">★最優先 '+h.topDone+'/'+h.topTotal+'</span></div>'
+   +'<div style="height:8px;background:#252540;border-radius:4px;overflow:hidden;margin:8px 0"><i style="display:block;height:100%;width:'+pct+'%;background:#00ff88"></i></div>'
+   +'<div class="app-desc">最後に更新：'+new Date(h.t).toLocaleDateString('ja-JP')+'（'+(days===0?'今日':days+'日前')+'）'+(topOk?' ✓ 最優先は完了':' ⚠ ★最優先がまだ残っています')+'</div>'
+   +'<a class="app-link" href="https://norinori-jan.github.io/leak-shield/" target="_blank">→ 続きをやる</a>';
+}
+window.addEventListener('secbridge:vault_health_updated',renderVaultHealth);
 document.addEventListener('DOMContentLoaded', () => {
-  renderAll();
+  renderAll();renderVaultHealth();renderLeakShield();
   // iCloud/quick-ref ボタン追加
   document.querySelectorAll('.sh-actions-bar').forEach(e => e.remove());
   const bar = document.createElement('div'); bar.className = 'sh-actions-bar';
@@ -729,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(bar);
   window.addEventListener('secbridge:vault_meta_updated', renderAll);
   window.addEventListener('storage', e => {
-    if (e.key && (e.key.startsWith('secbridge') || e.key === 'whitehacker_lab_state')) renderAll();
+    if (e.key && (e.key.startsWith('secbridge') || e.key === 'whitehacker_lab_state')) { renderAll(); renderVaultHealth(); renderLeakShield(); }
   // iCloud/quick-ref ボタン追加
   document.querySelectorAll('.sh-actions-bar').forEach(e => e.remove());
   const bar = document.createElement('div'); bar.className = 'sh-actions-bar';
