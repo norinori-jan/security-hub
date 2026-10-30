@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080810"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="個人情報ガード"><meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon.svg">
+<title>個人情報ガード</title>
+<style>
+:root{--bg:#080810;--sf:#0f0f1a;--sf2:#151525;--bd:#252540;--tx:#e4e4f4;--mut:#8a8ab0;--green:#00ff88;--red:#ff4466;--amber:#ffaa00;--blue:#4488ff}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,"Hiragino Sans",sans-serif;font-size:16px}
+body{padding:env(safe-area-inset-top) 14px calc(40px + env(safe-area-inset-bottom));max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:14px 0 10px}header b{font-size:19px;color:var(--green);flex:1}
+button{font:inherit;color:var(--tx);background:var(--sf2);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;min-height:44px}
+button.sel{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}button.sm{min-height:38px;padding:7px 11px;font-size:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.bar{height:10px;background:var(--bd);border-radius:5px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--green);transition:width .3s}
+.note{font-size:13px;color:var(--mut);line-height:1.7}
+.warn{background:rgba(255,170,0,.10);border:1px solid rgba(255,170,0,.5);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;margin-bottom:12px}
+.red{background:rgba(255,68,102,.10);border-color:var(--red)}
+details{border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;background:var(--sf)}
+summary{padding:12px;font-weight:700;list-style:none;display:flex;gap:8px;align-items:center}summary::-webkit-details-marker{display:none}
+summary .c{margin-left:auto;font-size:12px;color:var(--mut);font-weight:400}
+.it{display:flex;gap:10px;padding:10px 12px;border-top:1px solid var(--bd);align-items:flex-start}
+.it input{width:22px;height:22px;flex:none;margin-top:2px}.it .w{flex:1}.it .t{font-size:15px;line-height:1.5}.it .h{font-size:12.5px;color:var(--mut);line-height:1.6;margin-top:3px}
+.it.done .t{color:var(--mut);text-decoration:line-through}
+.pri{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-right:6px;border:1px solid var(--red);color:var(--red)}
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tg button{text-align:left;line-height:1.4}
+a{color:var(--green)}.cand{font-family:ui-monospace,Menlo,monospace;font-size:14px;word-break:break-all;padding:10px;border:1px solid var(--bd);border-radius:10px;margin:6px 0;background:var(--bg);display:flex;gap:8px;align-items:center}.cand span{flex:1}.cand button{flex:none}table{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.6}td,th{border-top:1px solid var(--bd);padding:7px 4px;vertical-align:top;text-align:left}th{color:var(--mut);font-weight:400}
+</style></head><body>
+<header><b>🛡 個人情報ガード</b><button class="sm" id="bReset">リセット</button></header>
+<div class="tabs"><button id="t1" class="sel">① 守る</button><button id="t2">② 漏れた！</button><button id="t3">③ つなぐ</button></div>
+<div id="v1"></div><div id="v2" hidden></div><div id="v3" hidden></div>
+<script>
+(function(){'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='leakshield_v1';
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY)||'{}');return{p:o.p||{},i:o.i||{},since:o.since||{}}}catch(e){return{p:{},i:{},since:{}}}}
+function save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}bridge(o)}
+// ---- 予防：優先度 3=最優先 ----
+const PREV=[
+['🔐','アカウントの土台',[
+['m1',3,'メールアドレス（Gmail・iCloudなど）に二段階認証をつける','メールを乗っ取られると、他の全サービスのパスワードを再発行されます。ここが一番大事です。'],
+['m2',3,'パスワードの使い回しをゼロにする','crypto-vault の「🚨 緊急」→「調べる」で、使い回しと漏洩を一覧にできます。'],
+['m3',3,'パスワードは金庫に入れ、パス作成アプリで長く作る','覚える必要があるのはマスターパスワード1つだけ。12文字以上、できれば20文字。'],
+['m4',2,'二段階認証は「認証アプリ」か「パスキー」を優先','SMSは無いよりずっと良いですが、SIM乗っ取りに弱いので次善です。'],
+['m5',2,'二段階認証のリカバリーコードを紙に書いて保管','スマホを失くしたときの最後の鍵です。金庫のメモに入れるか、紙で家に。'],
+['m6',2,'金庫のバックアップを定期的に書き出す（暗号化されたまま）','crypto-vault の「⚙ 設定 → 書き出す」。端末が壊れても復元できます。'],
+['m7',1,'使っていない古いアカウントを削除する','持っているだけで、サービス側の流出に巻き込まれる入口が増えます。']]],
+['🎣','詐欺・フィッシング対策',[
+['f1',3,'メール・SMSのリンクからログインしない','銀行・カード・通販は、公式アプリか自分でブックマークしたページから開きます。'],
+['f2',3,'「本人確認」「アカウント停止」「荷物不在」を急がせる連絡は疑う','焦らせるのが詐欺の型。連絡が本物でも、公式アプリ側で確認すれば困りません。'],
+['f3',3,'暗証番号・認証コード・パスワードを電話やチャットで教えない','銀行・警察・カード会社が、これらを聞くことはありません。'],
+['f4',2,'知らないQRコード・添付ファイルは開かない','貼り紙のQRコード、見知らぬ人から届いたファイルも同じです。'],
+['f5',1,'怪しいと思ったら、押さずに家族か窓口に見せる','迷惑メールはスクショして、そのまま削除で十分です。']]],
+['📱','端末まわり',[
+['d1',3,'スマホ・PCのOSとアプリを最新にする','更新の多くは、攻撃に使われる穴をふさぐものです。自動更新をオンに。'],
+['d2',3,'画面ロックは6桁以上（顔・指紋＋長めのコード）','4桁だけは短すぎます。'],
+['d3',2,'「探す」機能をオンにして、紛失時に遠隔ロックできるようにする','iPhone：設定 → 自分の名前 → 探す。'],
+['d4',2,'公共Wi-Fiでは、ログインや買い物をしない','必要なら、スマホ回線に切り替えます。'],
+['d5',1,'使っていないアプリを消し、位置情報・連絡先・写真の許可を見直す','「常に許可」は「使用中のみ」に。']]],
+['🌐','SNS・公開情報',[
+['s1',2,'自宅・職場・学校が分かる写真や投稿を控える','写真の背景、最寄り駅、位置情報つきの投稿から割り出されます。'],
+['s2',2,'生年月日・電話番号・メールは、公開にしない','プロフィールの「公開範囲」を見直します。'],
+['s3',1,'自分の名前で検索して、出てくる情報を確認する','消してほしい情報は、サイトの削除依頼フォームや検索エンジンの削除申請を使えます。'],
+['s4',1,'SNSの連携アプリ（「Googleでログイン」等）を整理する','使わないものは外します。']]],
+['💳','お金・信用',[
+['c1',3,'カード・銀行の利用通知（プッシュ／メール）をオンにする','不正利用に最短で気づけます。'],
+['c2',2,'ネット買い物は、ネット専用カードや上限を低くしたカードを使う','万一漏れても被害が限られます。'],
+['c3',2,'毎月の明細を、1回だけ見る習慣をつける','身に覚えのない少額請求は、不正利用のテストのことがあります。'],
+['c4',1,'年に1回、信用情報を開示して確認する','身に覚えのない契約・借入がないか。指定信用情報機関（CIC・JICCなど）の公式サイトから、本人が申込みます。']]],
+['🪪','書類・マイナンバー',[
+['b1',3,'マイナンバーは、法律で決まった場面以外で教えない','コピーを送るとき・写真を撮るときは、用途を確認します。'],
+['b2',2,'免許証・マイナンバーカードなどを写真に撮って保存しない（または暗号化して保管）','普通の写真アプリは、クラウド同期などで思わぬ場所に残ります。'],
+['b3',2,'書類を渡すときは「○○用のみ」と書いた上で、コピーを撮る','悪用の抑止になります。']]],
+['🤖','自分で作るアプリ・AI',[
+['a1',3,'APIキー・トークンを、チャットやコードに貼らない','GitHubに載せると、短時間で悪用されます。環境変数や、アプリの設定画面に入れる。'],
+['a2',3,'AIに送る前に、個人情報・秘密のメモを外す','名前・住所・番号・パスワード・顧客情報は送りません。'],
+['a3',2,'GitHubのリポジトリは、公開前に中身を確認する','Settings → Code security で Secret scanning を有効に。'],
+['a4',2,'同期サーバー（Worker）は、トークンなしで401になることを確認する','無認証のままだと、誰でも保存データを読み書きできてしまいます。']]]];
+// ---- 漏れた時：種類別 ----
+const COMMON=['何が・いつ・どこから漏れたかをメモし、通知メールや画面はスクショで残す','二次被害が出やすい期間（目安：今後3か月）は、不審な連絡に特に注意する'];
+const INC=[
+['🔑','パスワード・ログイン情報',['同じパスワードを使っているサービスを全部洗い出す（金庫の「🚨 緊急」→「調べる」）','まずメール、次にお金（銀行・カード・決済）、次にSNS、の順で新しいパスワードに変える（パス作成アプリで長く作る）','変更したら、そのサービスで「全端末からログアウト」を押す','二段階認証をつける（認証アプリかパスキー）','ログイン履歴・登録情報・メール転送設定を見て、知らない変更がないか確認する']],
+['📧','メールアドレス',['メールアカウントのパスワード変更＋二段階認証をつける','「転送設定」「フィルタ」に知らないルールがないか確認する','今後しばらくは、迷惑メール・なりすましメールが増える前提で、リンクを踏まない','そのメールで登録している重要サービスの「ログイン通知」を見直す']],
+['💳','クレジットカード番号',['カード会社の公式窓口（カード裏面の番号）に連絡し、停止・再発行を依頼する','直近の明細に、身に覚えのない請求がないか確認する','再発行後、サブスク・通販・公共料金など、登録しているカード情報を更新する','不正利用があれば、カード会社に申告し、必要なら警察にも相談する']],
+['🏦','銀行口座・ネットバンク',['銀行の公式窓口に電話で連絡し、状況を伝える（取引の一時停止ができる場合があります）','ネットバンクのパスワード・ワンタイム認証を再設定する','振込限度額を下げる、通知をオンにする','不正送金があれば、すぐ警察（#9110 または最寄りの警察署）と銀行へ']],
+['🏠','住所・電話番号・氏名',['知らない番号・「家族を装う」電話・宅配や役所を装う連絡に警戒する','携帯会社のアカウントに、暗証番号や追加認証を設定し、SIMの再発行・機種変更の手続きを守る','郵便物（身に覚えのない請求書やカード）が届いたら、放置せず発送元へ確認する','公開サイトに載ってしまった場合は、サイトの削除依頼フォームから申請する']],
+['🪪','マイナンバー・身分証の画像',['マイナンバーカードの紛失・不正利用の疑いは、公式の24時間窓口に連絡する（番号は必ずデジタル庁・マイナポータルの公式サイトで確認）','免許証・パスポートは、発行元（公安委員会・外務省の窓口など）に連絡して、再発行等の相談をする','携帯契約・口座開設・ローンなどで、なりすまされた形跡がないか信用情報を開示して確認する','マイナンバーの悪用が心配なときは、お住まいの市区町村の窓口で、変更等を相談できます']],
+['💬','SNS・ゲームの乗っ取り',['パスワード変更＋全端末ログアウト＋二段階認証','「連携アプリ」「ログイン中の端末」を確認し、知らないものを外す','友だち・フォロワーに「乗っ取られていた。変なリンクは押さないで」と別の手段で伝える','アカウントが取り返せないときは、サービスの公式サポートフォームから申請する']],
+['📱','端末の紛失・盗難',['「探す」で位置を確認し、紛失モード（遠隔ロック）にする','自力で戻らないときは、遠隔でデータ消去する','携帯会社に連絡して、回線を一時停止する','メール・金庫・SNS・決済のパスワードを、別の端末から変更する','盗難なら、警察に遺失物・被害届を出す']],
+['🤖','APIキー・トークン',['まず、そのキーを発行したサービスの管理画面で、キーを失効（revoke）させる（履歴の書き換えは、その後でも遅くない）','新しいキーを発行し、環境変数や設定画面にだけ入れる','利用履歴・請求を確認する（身に覚えのない利用がないか）','GitHub に載せた場合は、公開リポジトリ→非公開に変更し、Secret scanning の通知を確認する']]];
+const CONS='<div class="card"><b>📞 相談先</b><div class="note" style="margin-top:6px">・警察相談専用電話 <b>#9110</b>（または都道府県警のサイト）<br>・消費者ホットライン <b>188</b><br>・IPA 情報セキュリティ安心相談窓口<br>・カード会社・銀行（カード裏面・公式サイトの番号）<br>番号は、必ず公式サイトで確認してください。</div></div>';
+// ---- 画面 ----
+function stat(o){const pr=PREV.flatMap(g=>g[2]);const n=pr.length,d=pr.filter(x=>o.p[x[0]]).length;const top=pr.filter(x=>x[1]===3),td=top.filter(x=>o.p[x[0]]).length;return{n,d,top:top.length,td}}
+function r1(){const o=load(),s=stat(o);let h='<div class="card"><div style="display:flex;align-items:center"><b style="flex:1">守りの進み具合</b><span>'+s.d+'/'+s.n+'</span></div><div class="bar"><i style="width:'+Math.round(s.d/s.n*100)+'%"></i></div><div class="note">★最優先 '+s.td+'/'+s.top+'。まず★から。全部やらなくて大丈夫、上から順に1つずつ。チェックはこの端末にだけ残ります。</div></div>';
+  h+='<div class="warn">🔒 このアプリには、パスワード・番号・住所など、個人情報を入力する欄はありません。チェックの記録（できた／まだ）だけを、この端末に保存します。</div>';
+  const open=(location.hash.match(/g=(\d+)/)||[])[1];
+  PREV.forEach((g,gi)=>{const dn=g[2].filter(x=>o.p[x[0]]).length;h+='<details'+(String(gi)===open||(open===undefined&&gi===0)?' open':'')+'><summary><span>'+g[0]+' '+esc(g[1])+'</span><span class="c">'+dn+'/'+g[2].length+'</span></summary>'
+    +g[2].slice().sort((a,b)=>b[1]-a[1]).map(x=>'<label class="it'+(o.p[x[0]]?' done':'')+'"><input type="checkbox" data-p="'+x[0]+'"'+(o.p[x[0]]?' checked':'')+'><span class="w"><span class="t">'+(x[1]===3?'<span class="pri">★最優先</span>':'')+esc(x[2])+'</span><div class="h">'+esc(x[3])+'</div></span></label>').join('')+'</details>'});
+  $('v1').innerHTML=h}
+function r2(){const o=load();let h='<div class="warn red"><b>🚨 情報が漏れたかもしれない</b><br>落ち着いて。何が漏れたかを選ぶと、その順の手順が出ます。チェックは端末に残ります。</div><div class="tg">'+INC.map((g,i)=>'<button data-k="'+i+'"'+(String(i)===cur?' class="sel"':'')+'>'+g[0]+' '+esc(g[1])+'</button>').join('')+'</div>';
+  if(cur!==''){const g=INC[+cur],st=o.i[cur]||{};const steps=g[2].concat(COMMON);const dn=steps.filter((x,j)=>st[j]).length;
+    h+='<div class="card" style="margin-top:12px"><div style="display:flex"><b style="flex:1">'+g[0]+' '+esc(g[1])+'</b><span>'+dn+'/'+steps.length+'</span></div><div class="bar"><i style="width:'+Math.round(dn/steps.length*100)+'%"></i></div>'
+      +steps.map((x,j)=>'<label class="it'+(st[j]?' done':'')+'" style="border-top:1px solid var(--bd)"><input type="checkbox" data-i="'+cur+':'+j+'"'+(st[j]?' checked':'')+'><span class="w"><span class="t">'+(j+1)+'. '+esc(x)+'</span></span></label>').join('')+'</div>'}
+  if(cur!=='')h+=candHtml(cur);h+=CONS;$('v2').innerHTML=h}
+function r3(){$('v3').innerHTML='<div class="card"><b>🔗 つなぐ</b><div style="margin-top:10px;display:grid;gap:8px"><a href="../../crypto-vault/"><button style="width:100%;text-align:left">🔒 crypto-vault（金庫・漏洩チェック）</button></a><a href="../../pass-maker/"><button style="width:100%;text-align:left">🔑 パス作成</button></a><a href="../"><button style="width:100%;text-align:left">🛡 security-hub（司令塔）</button></a></div></div>'
+  +'<div class="card"><b>🧭 使い方（1日5分）</b><div class="note" style="margin-top:6px">1. 「① 守る」の★最優先を、1日1つずつ<br>2. 月に1回、crypto-vault で「調べる」<br>3. 怪しい連絡が来たら、リンクを押さずに「② 漏れた！」で確認<br>4. 漏れたら、種類を選んで上から順に</div></div>'
+  +'<div class="card"><div class="note">このアプリは、個人情報を外に送りません。ネット通信は一切しません。記録は、この端末の localStorage にだけあります。</div></div>'}
+
+// ---- 変更候補（この端末の中だけで作り、保存しません）----
+function rnd(n){const a=new Uint32Array(n);crypto.getRandomValues(a);return a}
+function pick(cs,n){const lim=Math.floor(4294967296/cs.length)*cs.length;let o='';while(o.length<n){for(const x of rnd(n*2)){if(x<lim&&o.length<n)o+=cs[x%cs.length]}}return o}
+function newPw(){const L='abcdefghijkmnopqrstuvwxyz',U='ABCDEFGHJKLMNPQRSTUVWXYZ',D='23456789',S='!@#$%^&*-_=+?';let t;do{t=pick(L+U+D+S,20)}while(!(/[a-z]/.test(t)&&/[A-Z]/.test(t)&&/[2-9]/.test(t)&&/[^a-zA-Z0-9]/.test(t)));return t}
+const SYL=['ka','ki','ku','ko','sa','shi','su','se','so','ta','te','to','na','ni','no','ha','hi','ho','ma','mi','mu','mo','ra','ri','ru','re','yo','wa'];
+function newMail(){let a='';for(let i=0;i<3;i++){a+=SYL[rnd(1)[0]%SYL.length]}let b='';for(let i=0;i<3;i++){b+=SYL[rnd(1)[0]%SYL.length]}return a+'.'+b+pick('23456789',3)}
+let CAND=null;
+function mkCand(){CAND={pw:[newPw(),newPw(),newPw()],ml:[newMail(),newMail(),newMail()]}}
+const PROV=[['Gmail（Google）','@gmail.com の部分は変更できません。新しく作って移行します。','Googleアカウントのメールが、Gmail以外のアドレスなら変更できます。「name+shop@gmail.com」のように、+のあとに文字を付けて使い分けもできます。'],
+['Yahoo!メール（Yahoo! JAPAN）','Yahoo! JAPAN IDが、そのままアドレスです。変更はできません。','新しいIDを作って移行します。'],
+['Microsoft（outlook.com / hotmail）','アカウントに「別名（エイリアス）」を追加し、メインに切り替えられます。4社の中で、いちばん簡単です。','変更回数に上限があります。公式サイトで確認してください。'],
+['Apple（iCloudメール）','@icloud.com の部分は変更できません。','Apple IDが他社のメールなら変更できます。iCloudには、別名と「メールを非公開」があり、サービスごとに別のアドレスを使えます。']];
+function candHtml(i){const sets=(i==='0'||i==='1');if(!(sets||i==='6'||i==='7'))return'';if(!CAND)mkCand();
+  let h='<div class="card"><b>🔄 変更の候補</b>';
+  if(sets)h+='<div class="warn red" style="margin-top:8px"><b>メールとパスワードは、セットで狙われます。</b><br>漏れた「メール＋パスワード」の組み合わせは、他のサービスにも自動で試されます（使い回しがあると、そこから入られます）。<b>メールを守る → 同じパスワードのサービスを順に変える</b>、の順で、必ず両方やります。</div>';
+  h+='<div class="note" style="margin:10px 0 4px">新しいパスワード（20文字・この画面で作り、保存しません）</div>'+CAND.pw.map((x,k)=>'<div class="cand"><span>'+esc(x)+'</span><button class="sm" data-cp="pw'+k+'">📋</button></div>').join('')
+   +'<div class="note">コピーは60秒で消そうとします。すぐ crypto-vault の入力欄に貼ってください。サービスごとに、別のものを使います。</div>';
+  if(sets)h+='<div class="note" style="margin:14px 0 4px">新しいメールアドレスの候補（@の前の部分）</div>'+CAND.ml.map((x,k)=>'<div class="cand"><span>'+esc(x)+'</span><button class="sm" data-cp="ml'+k+'">📋</button></div>').join('')
+   +'<div class="note">本名・生年月日・電話番号は入れません。空いているかは、作成画面で確認します。</div>';
+  h+='<div style="margin-top:10px"><button class="sm" data-regen="1">🎲 別の候補を出す</button></div></div>';
+  if(sets)h+='<div class="card"><b>📮 アドレスは変えられる？</b><div class="note" style="margin:6px 0">結論：<b>アドレス自体は、変えられないことが多い</b>です（※私の知る範囲です。仕様は変わるので、最後は公式で確認を）。多くの場合は、<b>アドレスは変えず、パスワードと二段階認証で守る</b>のが現実的です。新しいアドレスが必要なのは、「アドレス自体が悪用・迷惑メールの標的」になったときです。</div><table><tr><th>サービス</th><th>アドレスの変更</th></tr>'+PROV.map(r=>'<tr><td><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'<br><span style="color:var(--mut)">'+esc(r[2])+'</span></td></tr>').join('')+'</table>'
+   +'<div class="note" style="margin-top:10px"><b>新しいアドレスに移るとき</b><br>① 先に新アドレスを作り、二段階認証をつける<br>② 登録先を、重要順（銀行・カード・Apple/Google・SNS）に、新アドレスへ変更<br>③ 古いアドレスは、すぐ消さず、転送や確認用に半年〜1年残す<br>④ 登録先は、金庫の一覧が、そのまま変更の順番表になります</div></div>';
+  return h}
+let cur='';
+function go(n){['1','2','3'].forEach(x=>{$('t'+x).className=x===n?'sel':'';$('v'+x).hidden=x!==n});({1:r1,2:r2,3:r3})[n]()}
+['1','2','3'].forEach(n=>$('t'+n).onclick=()=>go(n));
+$('v1').addEventListener('change',e=>{const c=e.target.closest('[data-p]');if(!c)return;const o=load();if(c.checked)o.p[c.dataset.p]=Date.now();else delete o.p[c.dataset.p];save(o);const g=[...document.querySelectorAll('#v1 details')].findIndex(d=>d.open);location.hash='g='+Math.max(0,g);r1()});
+$('v2').addEventListener('change',e=>{const c=e.target.closest('[data-i]');if(!c)return;const[k,j]=c.dataset.i.split(':');const o=load();o.i[k]=o.i[k]||{};if(c.checked)o.i[k][j]=Date.now();else delete o.i[k][j];if(!o.since[k])o.since[k]=Date.now();save(o);r2()});
+$('v2').addEventListener('click',e=>{const k=e.target.closest('[data-k]');if(k){cur=k.dataset.k;mkCand();r2();return}
+  if(e.target.closest('[data-regen]')){mkCand();r2();return}
+  const c=e.target.closest('[data-cp]');if(c&&CAND){const t=c.dataset.cp,v=t.slice(0,2)==='pw'?CAND.pw[+t[2]]:CAND.ml[+t[2]];
+    (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).then(()=>{c.textContent='✓';setTimeout(()=>{c.textContent='📋'},1500);setTimeout(()=>{navigator.clipboard.writeText('').catch(()=>{})},60000)}).catch(()=>{c.textContent='×'})}});
+$('bReset').onclick=()=>{if(confirm('チェックを全部消します。よろしいですか？')){try{localStorage.removeItem(KEY)}catch(e){}cur='';go('1')}};
+// security-hub へは「件数」だけ渡す
+function bridge(o){try{const s=stat(o);localStorage.setItem('secbridge_leak_shield',JSON.stringify({t:Date.now(),done:s.d,total:s.n,topDone:s.td,topTotal:s.top}))}catch(e){}}
+go('1');
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script></body></html>

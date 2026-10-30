@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WhiteHacker Lab">
+    <title>WhiteHacker Lab - 完全統合版セキュリティ教育プラットフォーム</title>
+    
+    <!-- Chart.js for Skill Radar -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <style>
+        /* ========== FONT & VARIABLES ========== */
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700&display=swap');
+        
+        :root {
+            --primary: #00ff41;
+            --primary-dark: #00cc33;
+            --secondary: #ff006e;
+            --accent: #00d9ff;
+            --warning: #ffa500;
+            --danger: #ff0055;
+            --bg-dark: #0a0e27;
+            --bg-darker: #050813;
+            --text-light: #e0e0e0;
+            --text-muted: #808080;
+            --grid-color: rgba(0, 255, 65, 0.05);
+            --scanline-color: rgba(255, 255, 255, 0.03);
+            --shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            --glow: 0 0 10px rgba(0, 255, 65, 0.3);
+            --safe-top: max(env(safe-area-inset-top), 12px);
+            --safe-bottom: max(env(safe-area-inset-bottom), 12px);
+            --safe-left: max(env(safe-area-inset-left), 12px);
+            --safe-right: max(env(safe-area-inset-right), 12px);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* ========== NOISE & SCANLINE EFFECTS ========== */
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+        
+        @keyframes glitch {
+            0%, 100% { text-shadow: -2px 0 #ff006e, 2px 0 #00d9ff; }
+            50% { text-shadow: -2px 0 #00d9ff, 2px 0 #ff006e; }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 65, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(0, 255, 65, 0.6); }
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1428 100%);
+            background-attachment: fixed;
+            color: var(--text-light);
+            font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bottom);
+        }
+        
+        /* Noise overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 255, 255, 0.03),
+                    rgba(255, 255, 255, 0.03) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            animation: scanlines 8s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="none"/><circle cx="30" cy="30" r="20" fill="rgba(0,255,65,0.02)"/><circle cx="70" cy="70" r="15" fill="rgba(255,0,110,0.02)"/></svg>');
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* ========== HEADER & NAV ========== */
+        header {
+            position: sticky;
+            top: var(--safe-top);
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--primary);
+            padding: 12px var(--safe-left);
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Syne', sans-serif;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            letter-spacing: 2px;
+        }
+        
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-toggle:hover {
+            background: rgba(0, 255, 65, 0.1);
+        }
+        
+        nav {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        nav button {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        nav button:hover,
+        nav button.active {
+            background: var(--primary);
+            color: var(--bg-dark);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+        
+        /* ========== MAIN CONTENT ========== */
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px var(--safe-left);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .module-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .module-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-header {
+            font-size: 28px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-icon {
+            font-size: 32px;
+        }
+        
+        /* ========== CARDS & CONTAINERS ========== */
+        .card {
+            background: rgba(20, 25, 50, 0.6);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .card-title {
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-content {
+            color: var(--text-light);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* ========== BUTTONS & INPUTS ========== */
+        button, input[type="button"], input[type="submit"] {
+            font-family: 'JetBrains Mono', monospace;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        button:hover, input[type="button"]:hover, input[type="submit"]:hover {
+            background: rgba(0, 255, 65, 0.1);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+        
+        button.danger {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        button.danger:hover {
+            background: rgba(255, 0, 85, 0.1);
+            box-shadow: 0 0 10px rgba(255, 0, 85, 0.3);
+        }
+        
+        button.secondary {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        button.secondary:hover {
+            background: rgba(0, 217, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        textarea,
+        select {
+            background: rgba(10, 14, 39, 0.5);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+            background: rgba(10, 14, 39, 0.8);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* ========== GRID LAYOUT ========== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        /* ========== UTILITIES ========== */
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-muted {
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--bg-dark);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .badge.warning {
+            background: var(--warning);
+        }
+        
+        .badge.danger {
+            background: var(--danger);
+        }
+        
+        .badge.secondary {
+            background: var(--accent);
+        }
+        
+        /* ========== OUTPUT/RESULT DISPLAY ========== */
+        .output-box {
+            background: rgba(5, 8, 19, 0.8);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+        
+        .success {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .error {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+        
+        .warning {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+        
+        /* ========== PROGRESS & STATS ========== */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(10, 14, 39, 0.5);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--bg-dark);
+        }
+        
+        .stat-box {
+            background: rgba(20, 25, 50, 0.6);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: var(--glow);
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+        
+        /* ========== RADAR CHART RESPONSIVE ========== */
+        #skill-radar {
+            width: 100% !important;
+            height: auto !important;
+            min-height: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            #skill-radar {
+                min-height: 250px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #skill-radar {
+                min-height: 200px;
+            }
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 14px;
+            }
+            
+            .nav-toggle {
+                display: block;
+            }
+            
+            nav {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(10, 14, 39, 0.98);
+                flex-direction: column;
+                gap: 4px;
+                padding: 12px;
+                border-bottom: 2px solid var(--primary);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            
+            nav.open {
+                max-height: 500px;
+            }
+            
+            nav button {
+                width: 100%;
+            }
+            
+            header {
+                flex-wrap: wrap;
+            }
+            
+            .section-header {
+                font-size: 20px;
+            }
+            
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            main {
+                padding: 16px var(--safe-left);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+            
+            nav button {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            
+            .section-header {
+                font-size: 18px;
+                gap: 8px;
+            }
+            
+            .section-icon {
+                font-size: 24px;
+            }
+            
+            .card {
+                padding: 12px;
+                font-size: 13px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+        }
+
+        /* ========== r2: 読みやすさ優先（背景の動きを止め、文字を明るく） ========== */
+        :root { --text-light: #f4f7fb; --text-muted: #b6c0cf; }
+        body { background: #0b1020; font-size: 15px; line-height: 1.7; }
+        body::before { animation: none; opacity: 0.25; }
+        body::after { content: none; }
+        .logo, .section-header, .nav-toggle, nav button:hover, nav button.active { text-shadow: none; box-shadow: none; }
+        .card { background: rgba(16, 22, 44, 0.96); border: 1px solid rgba(0, 255, 65, 0.35); box-shadow: none; }
+        .card:hover { transform: none; box-shadow: none; border-color: rgba(0, 217, 255, 0.6); }
+        .card-content { font-size: 15px; line-height: 1.8; }
+        .card-title { text-transform: none; letter-spacing: 0.3px; }
+        .module-section { animation: none; }
+        nav button:hover { transform: none; }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+        /* 学習の現在地 */
+        #where { background: #101a34; border: 1px solid rgba(0, 217, 255, 0.55); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px; }
+        #where .w-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+        #where .w-step { color: #0b1020; background: var(--accent); font-weight: 700; padding: 2px 10px; border-radius: 99px; font-size: 13px; white-space: nowrap; }
+        #where .w-name { font-size: 18px; font-weight: 700; color: #fff; }
+        #where .w-en { color: var(--text-muted); font-size: 12px; }
+        #where .w-path { display: flex; gap: 6px; margin: 12px 0; flex-wrap: wrap; }
+        #where .w-path button { background: transparent; color: var(--text-muted); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+        #where .w-path button.now { background: var(--accent); color: #0b1020; border-color: var(--accent); font-weight: 700; }
+        #where .w-path button.done { border-color: var(--primary); color: var(--primary); }
+        #where dl { display: grid; grid-template-columns: 6.5em 1fr; gap: 6px 10px; font-size: 14px; margin-top: 8px; }
+        #where dt { color: var(--accent); font-weight: 700; }
+        #where dd { color: var(--text-light); }
+        #where .w-topics { display: flex; flex-wrap: wrap; gap: 6px; }
+        #where .w-topics span { border: 1px solid rgba(255,255,255,0.25); border-radius: 99px; padding: 1px 10px; font-size: 13px; }
+        #where .w-topics span.ok { border-color: var(--primary); color: var(--primary); }
+        #where .w-nav { display: flex; gap: 8px; margin-top: 12px; }
+        #where .w-nav button { flex: 1; text-transform: none; letter-spacing: 0; }
+        .learn-strip { background: rgba(0, 217, 255, 0.08); border-left: 3px solid var(--accent); border-radius: 4px; padding: 8px 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.7; }
+        .learn-strip b { color: var(--accent); }
+        .learn-strip .ls-links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .learn-strip .ls-links button { text-transform: none; letter-spacing: 0; font-size: 12px; padding: 4px 10px; }
+        .learn-strip details { margin-top: 6px; }
+        .learn-strip summary { cursor: pointer; color: var(--warning); }
+        .card[data-done="1"] .card-title::after { content: "  ✓ 体験済み"; color: var(--primary); font-size: 12px; font-weight: 400; }
+        @media (max-width: 768px) { nav:not(.open) { padding-top: 0; padding-bottom: 0; border-bottom: 0; } }
+        #where .w-path { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+        #where .w-path button { flex: 0 0 auto; }
+        #where summary { cursor: pointer; color: var(--accent); font-weight: 700; margin-top: 6px; }
+        #where .w-nav button { font-size: 13px; padding: 8px 6px; }
+        #toast-wh { position: fixed; left: 50%; bottom: 70px; transform: translateX(-50%); background: #101a34; color: #fff; border: 1px solid var(--primary); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 10000; display: none; max-width: 90%; }
+        #toast-wh.error { border-color: var(--danger); }
+
+        /* 図解 */
+        .dg { margin: 0 0 12px; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 10px; background: rgba(255,255,255,0.03); }
+        .dg > summary { cursor: pointer; color: var(--accent); font-weight: 700; font-size: 14px; }
+        .dg-lane { display: flex; flex-wrap: wrap; align-items: stretch; gap: 4px; margin-top: 8px; }
+        .dg-tag { flex: 0 0 100%; font-size: 12px; font-weight: 700; }
+        .dg-lane.ok .dg-tag { color: var(--primary); } .dg-lane.bad .dg-tag { color: #ff7a9c; } .dg-lane.fix .dg-tag { color: var(--accent); }
+        .dg-box { flex: 1 1 110px; min-width: 96px; border-radius: 8px; padding: 6px 8px; font-size: 13px; line-height: 1.5; border: 1px solid; background: rgba(0,0,0,0.25); word-break: break-word; }
+        .dg-lane.ok .dg-box { border-color: rgba(0,255,65,0.55); } .dg-lane.bad .dg-box { border-color: rgba(255,0,85,0.7); } .dg-lane.fix .dg-box { border-color: rgba(0,217,255,0.7); }
+        .dg-box code { font-size: 12px; color: #fff; background: rgba(255,255,255,0.1); padding: 0 3px; border-radius: 3px; }
+        .dg-ar { align-self: center; color: var(--text-muted); font-size: 14px; flex: 0 0 auto; }
+        .dg-note { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+        .learn-strip .ls-links button.ext { border-color: var(--warning); color: var(--warning); }
+    </style>
+</head>
+<body>
+    <div id="ecoNav" role="navigation" aria-label="セキュリティ3アプリ"><style>#ecoNav{font:13px/1.55 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;background:#0d1426;border:1px solid #2f4272;border-radius:12px;margin:8px 0 12px;padding:8px 10px;color:#eaf0ff;text-align:left;letter-spacing:0;text-transform:none}
+    #ecoNav *{box-sizing:border-box;font-family:inherit;letter-spacing:0;text-transform:none}
+    #ecoNav .en-t{display:block;font-size:12px;color:#9fb3df;margin-bottom:6px}
+    #ecoNav .en-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    #ecoNav .en-i{display:block;min-height:44px;padding:5px 4px;border-radius:9px;border:1px solid #3a4f86;background:#121c36;color:#eaf0ff;text-decoration:none;text-align:center;line-height:1.3}
+    #ecoNav .en-i b{display:block;font-size:13px;font-weight:700;white-space:nowrap}
+    #ecoNav .en-i small{display:block;font-size:10px;color:#9fb3df;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #ecoNav .en-i.here{background:#00d9ff;border-color:#00d9ff;color:#061024}
+    #ecoNav .en-i.here small{color:#0b2a44}
+    #ecoNav details{margin-top:8px}
+    #ecoNav summary{cursor:pointer;color:#7fe3ff;font-size:13px;min-height:32px}
+    #ecoNav table{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}
+    #ecoNav td{border-top:1px solid #2a3a63;padding:5px 4px;vertical-align:top}
+    #ecoNav td:first-child{color:#9fb3df;width:46%}
+    #ecoNav .en-flow{margin-top:8px;padding:8px;border:1px dashed #3a4f86;border-radius:9px;font-size:12px;line-height:1.7;color:#cfe0ff}
+    #ecoNav .en-flow b{color:#fff}
+    @media (max-width:560px){#ecoNav .en-row{grid-template-columns:repeat(2,1fr)}}
+    #ecoNav .en-g{display:grid;grid-template-columns:1fr auto auto;gap:5px 6px;align-items:center;margin-top:6px}
+    #ecoNav .en-g .h{font-size:11px;color:#9fb3df}
+    #ecoNav .en-g .q{font-size:13px;color:#eaf0ff;line-height:1.4}
+    #ecoNav .en-g a{display:block;min-height:36px;padding:6px 8px;border-radius:8px;border:1px solid #3a4f86;background:#121c36;color:#7fe3ff;text-decoration:none;font-size:12px;font-weight:700;white-space:nowrap;text-align:center;line-height:1.5}
+    #ecoNav .en-g a.pr{color:#ffd37f}
+    #ecoNav .en-s{margin-top:8px;font-size:12px;color:#cfe0ff;line-height:1.8}
+    #ecoNav .en-s a{color:#7fe3ff}</style>
+    <span class="en-t">🧭 セキュリティの3リポジトリ（4ページ）を行き来</span>
+    <div class="en-row"><a class="en-i" href="https://norinori-jan.github.io/security-hub/"><b>🛰 司令塔</b><small>security-hub</small></a><span class="en-i here" aria-current="page"><b>🎓 入門ラボ</b><small>いまここ</small></span><a class="en-i" href="https://norinori-jan.github.io/crypto-vault/lab.html"><b>🔬 VAULT LAB</b><small>crypto-vault（学習）</small></a><a class="en-i" href="https://norinori-jan.github.io/crypto-vault/"><b>🔐 金庫</b><small>crypto-vault（本番）</small></a></div>
+    <details><summary>使い分けガイド：この場合はここを見る／練習はここ</summary>
+    <div class="en-g"><span class="h">こんな時は…</span><span class="h">📖 見る</span><span class="h">🧪 練習</span><span class="q">SQLi・XSS・CSRF・ハッシュ（攻撃の仕組み）</span><a href="https://norinori-jan.github.io/whitehacker-lab/#t=sqli">入門ラボ</a><a class="pr" href="https://norinori-jan.github.io/crypto-vault/lab.html#attack">VAULT LAB</a><span class="q">暗号化・鍵・乱数（AES, PBKDF2, ECDH）</span><a href="https://norinori-jan.github.io/whitehacker-lab/#t=aes">入門ラボ</a><a class="pr" href="https://norinori-jan.github.io/crypto-vault/lab.html#crypto">VAULT LAB</a><span class="q">JWT・HTTPヘッダー・Cookie（通信を読む）</span><a href="https://norinori-jan.github.io/whitehacker-lab/#t=http">入門ラボ</a><a class="pr" href="https://norinori-jan.github.io/crypto-vault/lab.html#packet">VAULT LAB</a><span class="q">CTF（謎解きで腕試し）</span><a href="https://norinori-jan.github.io/whitehacker-lab/#m=ctf">入門ラボ</a><a class="pr" href="https://norinori-jan.github.io/crypto-vault/lab.html#ctf">VAULT LAB</a><span class="q">脅威の洗い出し（STRIDE）</span><a href="https://norinori-jan.github.io/whitehacker-lab/#m=stride">入門ラボ</a><a class="pr" href="https://norinori-jan.github.io/crypto-vault/lab.html#threat">VAULT LAB</a></div><div class="en-s">📈 進み具合・脆弱性ニュース → <a href="https://norinori-jan.github.io/security-hub/">🛰 司令塔</a><br>🔑 パスワード・秘密のメモをしまう → <a href="https://norinori-jan.github.io/crypto-vault/">🔐 金庫</a>（学習とは別・毎日使う本番）</div><div class="en-flow"><b>使い分け</b><br>① <b>📖 入門ラボ</b>で意味と図解を読む（やさしい説明）<br>② <b>🧪 VAULT LAB</b>で本物に近い実験をする（より本格的）<br>③ <b>🛰 司令塔</b>で進み具合を確認（入門ラボの進み具合が届く／VAULT LABは別記録）<br>🔐 金庫は学習と<b>独立</b>。練習データは入りません。</div>
+    </details></div>
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <div class="logo">⬥ WhiteHacker Lab</div>
+            <button class="nav-toggle" onclick="toggleNav()">☰</button>
+            <nav id="nav-menu">
+                <button data-m="simulator" onclick="switchModule('simulator')" class="nav-btn active">Attack Simulator</button>
+                <button data-m="crypto" onclick="switchModule('crypto')" class="nav-btn">Crypto Playground</button>
+                <button data-m="packet" onclick="switchModule('packet')" class="nav-btn">Packet Analyzer</button>
+                <button data-m="ctf" onclick="switchModule('ctf')" class="nav-btn">CTF Challenge</button>
+                <button data-m="stride" onclick="switchModule('stride')" class="nav-btn">STRIDE</button>
+                <button data-m="passport" onclick="switchModule('passport')" class="nav-btn">Skill Passport</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <div id="where"></div>
+        <!-- 1. ATTACK SIMULATOR -->
+        <section id="simulator" class="module-section active">
+            <div class="section-header">
+                <span class="section-icon">🎯</span>
+                <span>ATTACK SIMULATOR</span>
+            </div>
+            <div id="simulator-content">
+                <div class="card" data-topic="sqli">
+                    <div class="card-title">SQL Injection Simulator</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">ログインフォームに対するSQLi攻撃を体験してください。</p>
+                        <p><strong>攻撃例：</strong> <code style="color: var(--danger);">admin' OR '1'='1</code></p>
+                        <input type="text" id="sqli-username" placeholder="Username" style="margin-bottom: 8px;">
+                        <input type="password" id="sqli-password" placeholder="Password" style="margin-bottom: 8px;">
+                        <button onclick="simulateSQLi()">Execute Attack</button>
+                        <div id="sqli-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="xss">
+                    <div class="card-title">XSS (Cross-Site Scripting)</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">コメント欄にペイロードを入力してXSS脆弱性をシミュレートします。</p>
+                        <textarea id="xss-payload" placeholder="Example: &lt;img src=x onerror=&quot;alert('XSS')&quot;&gt;"></textarea>
+                        <button onclick="simulateXSS()" style="margin-top: 8px;">Execute XSS</button>
+                        <div id="xss-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="hash">
+                    <div class="card-title">Hash Cracking Demo</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">辞書攻撃によるハッシュクラッキングのデモンストレーション。</p>
+                        <input type="text" id="hash-input" placeholder="Enter hash to crack" style="margin-bottom: 8px;">
+                        <button onclick="simulateHashCrack()">Attempt Crack</button>
+                        <div id="hash-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="csrf">
+                    <div class="card-title">CSRF (Cross-Site Request Forgery)</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">CSRF攻撃のシミュレーション。</p>
+                        <button onclick="simulateCSRF()">Trigger CSRF Attack</button>
+                        <div id="csrf-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CRYPTO PLAYGROUND -->
+        <section id="crypto" class="module-section">
+            <div class="section-header">
+                <span class="section-icon">🔐</span>
+                <span>CRYPTO PLAYGROUND</span>
+            </div>
+            <div id="crypto-content">
+                <p style="color: var(--text-muted); margin-bottom: 16px;">WebCrypto APIを使用した暗号技術の実践的な体験。</p>
+                
+                <div class="card" data-topic="aes">
+                    <div class="card-title">AES-GCM Encryption</div>
+                    <div class="card-content">
+                        <textarea id="aes-plaintext" placeholder="Plaintext to encrypt"></textarea>
+                        <input type="password" id="aes-password" placeholder="Password" style="margin-top: 8px;">
+                        <button onclick="performAESGCM()" style="margin-top: 8px;">Encrypt</button>
+                        <div id="aes-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="ecdh">
+                    <div class="card-title">ECDH (Elliptic Curve Diffie-Hellman)</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">公開鍵交換のシミュレーション</p>
+                        <button onclick="performECDH()" style="margin-bottom: 8px;">Generate Keys & Derive Secret</button>
+                        <div id="ecdh-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="pbkdf2">
+                    <div class="card-title">PBKDF2 Key Derivation</div>
+                    <div class="card-content">
+                        <input type="password" id="pbkdf2-password" placeholder="Password" style="margin-bottom: 8px;">
+                        <button onclick="performPBKDF2()">Derive Key</button>
+                        <div id="pbkdf2-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="csprng">
+                    <div class="card-title">CSPRNG (Cryptographically Secure Random)</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">セキュアなランダム値の生成</p>
+                        <button onclick="generateCSPRNG()">Generate Random Token</button>
+                        <div id="csprng-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. PACKET ANALYZER -->
+        <section id="packet" class="module-section">
+            <div class="section-header">
+                <span class="section-icon">📡</span>
+                <span>PACKET ANALYZER</span>
+            </div>
+            <div id="packet-content">
+                <div class="card" data-topic="http">
+                    <div class="card-title">HTTP Header Inspector</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">HTTPヘッダーの検査とセキュリティ脆弱性の検出</p>
+                        <button onclick="analyzeHTTPHeaders()" style="margin-bottom: 8px;">Fetch & Analyze Headers</button>
+                        <div id="http-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="jwt">
+                    <div class="card-title">JWT Analyzer</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">JWTトークンの解析とalg:none脆弱性の検証</p>
+                        <textarea id="jwt-input" placeholder="Paste JWT token here"></textarea>
+                        <button onclick="analyzeJWT()" style="margin-top: 8px;">Analyze JWT</button>
+                        <div id="jwt-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="cookie">
+                    <div class="card-title">Cookie Matrix</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">現在のクッキーを表示・検査</p>
+                        <button onclick="showCookieMatrix()">Display Cookies</button>
+                        <div id="cookie-output" class="output-box" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CTF CHALLENGE -->
+        <section id="ctf" class="module-section">
+            <div class="section-header">
+                <span class="section-icon">🚩</span>
+                <span>CTF CHALLENGE</span>
+            </div>
+            <div id="ctf-content">
+                <div class="card" data-topic="c_b64">
+                    <div class="card-title">Base64 Challenge</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">Base64エンコードされたテキストをデコードしてフラグを見つけます。</p>
+                        <div id="base64-challenge-text" class="output-box" style="margin-bottom: 8px;"></div>
+                        <input type="text" id="base64-flag-input" placeholder="Flag" style="margin-bottom: 8px;">
+                        <button onclick="submitBase64Flag()">Submit</button>
+                        <div id="base64-result" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="c_rot">
+                    <div class="card-title">ROT13 Challenge</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">ROT13で暗号化されたテキストをデコードします。</p>
+                        <div id="rot13-challenge-text" class="output-box" style="margin-bottom: 8px;"></div>
+                        <input type="text" id="rot13-flag-input" placeholder="Flag" style="margin-bottom: 8px;">
+                        <button onclick="submitROT13Flag()">Submit</button>
+                        <div id="rot13-result" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+
+                <div class="card" data-topic="c_jwt">
+                    <div class="card-title">JWT Flag Challenge</div>
+                    <div class="card-content">
+                        <p style="margin-bottom: 12px;">改ざんされたJWTトークンを検出・修正します。</p>
+                        <div id="jwt-challenge-token" class="output-box" style="margin-bottom: 8px;"></div>
+                        <input type="text" id="jwt-flag-input" placeholder="Extracted Flag" style="margin-bottom: 8px;">
+                        <button onclick="submitJWTFlag()">Submit</button>
+                        <div id="jwt-result" style="margin-top: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. STRIDE -->
+        <section id="stride" class="module-section">
+            <div class="section-header">
+                <span class="section-icon">🛡️</span>
+                <span>STRIDE THREAT ANALYSIS</span>
+            </div>
+            <div id="stride-content">
+                <p style="color: var(--text-muted); margin-bottom: 16px;">STRIDE脅威モデルを使用したセキュリティ分析</p>
+                
+                <div class="grid-2">
+                    <div class="card" data-topic="s_spoof">
+                        <div class="card-title">🔑 Spoofing</div>
+                        <div class="card-content">
+                            認証またはIDの詐称攻撃
+                            <button onclick="toggleThreat('spoofing')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="spoofing-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> 不正な認証
+                                <br><strong>事例：</strong> パスワードスプレー、トークン改ざん
+                                <br><strong>対策：</strong> MFA, 強固な認証
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-topic="s_tamper">
+                        <div class="card-title">🚫 Tampering</div>
+                        <div class="card-content">
+                            データ・ソースの改ざん
+                            <button onclick="toggleThreat('tampering')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="tampering-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> データ改ざん
+                                <br><strong>事例：</strong> MITM, SQLi, フォーム改ざん
+                                <br><strong>対策：</strong> HTTPS, 入力検証, 署名
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-topic="s_repud">
+                        <div class="card-title">👀 Repudiation</div>
+                        <div class="card-content">
+                            アクション否認の脅威
+                            <button onclick="toggleThreat('repudiation')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="repudiation-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> 行動否認
+                                <br><strong>事例：</strong> ログなしトランザクション
+                                <br><strong>対策：</strong> 監査ログ, デジタル署名
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-topic="s_info">
+                        <div class="card-title">⚠️ Information Disclosure</div>
+                        <div class="card-content">
+                            情報漏洩の脅威
+                            <button onclick="toggleThreat('disclosure')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="disclosure-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> データ漏洩
+                                <br><strong>事例：</strong> エラーメッセージ漏洩, ディレクトリ列挙
+                                <br><strong>対策：</strong> 暗号化, アクセス制御
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-topic="s_dos">
+                        <div class="card-title">🔓 Denial of Service</div>
+                        <div class="card-content">
+                            DoS攻撃の脅威
+                            <button onclick="toggleThreat('dos')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="dos-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> サービス停止
+                                <br><strong>事例：</strong> DDoS, 大量リクエスト
+                                <br><strong>対策：</strong> レート制限, DDoS対策
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" data-topic="s_elev">
+                        <div class="card-title">📈 Elevation of Privilege</div>
+                        <div class="card-content">
+                            権限昇格の脅威
+                            <button onclick="toggleThreat('privilege')" style="margin-top: 8px; width: 100%;">Details</button>
+                            <div id="privilege-detail" style="display:none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--text-muted); font-size: 12px;">
+                                <strong>脅威：</strong> 不正な権限取得
+                                <br><strong>事例：</strong> IDOR, Path Traversal
+                                <br><strong>対策：</strong> RBAC, 権限検証
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. SKILL PASSPORT -->
+        <section id="passport" class="module-section">
+            <div class="section-header">
+                <span class="section-icon">🎓</span>
+                <span>SKILL PASSPORT</span>
+            </div>
+            <div id="passport-content">
+                <div class="grid-3">
+                    <div class="stat-box">
+                        <div class="stat-value" id="xp-display">0</div>
+                        <div class="stat-label">Total XP</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="level-display">1</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="badge-display">0</div>
+                        <div class="stat-label">Badges</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-title">XP Progress</div>
+                    <div class="card-content">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="xp-bar" style="width: 0%">0%</div>
+                        </div>
+                        <p style="font-size: 12px; margin-top: 8px;" id="xp-text">0 / 1000 XP to next level</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Earned Badges</div>
+                    <div class="card-content" id="badge-list">
+                        <p style="color: var(--text-muted);">Complete challenges to unlock badges</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Skill Radar</div>
+                    <div class="card-content">
+                        <canvas id="skill-radar" style="width: 100%; height: 350px; display: block;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Session Data</div>
+                    <div class="card-content">
+                        <button onclick="exportProgress()" style="margin-right: 8px; margin-bottom: 8px;">Export</button>
+                        <button onclick="importProgress()" style="margin-bottom: 8px;">Import</button>
+                        <button onclick="resetProgress()" class="danger" style="margin-bottom: 8px;">Reset</button>
+                        <div style="margin-top: 8px;">
+                            <button onclick="saveToiCloud()" style="margin: 0 8px 8px 0;">💾 iCloudに保存</button>
+                            <button onclick="sendToQuickRef()" style="margin: 0 8px 8px 0;">📤 quick-refへ送る</button>
+                            <button onclick="syncToSecurityHub()" style="margin-bottom: 8px;">🔗 security-hubへ同期</button>
+                        </div>
+                        <div id="session-info" style="margin-top: 12px; padding: 12px; background: rgba(0,255,65,0.05); border-radius: 4px; font-size: 12px;">
+                            Loading session data...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const role = localStorage.getItem('sessionRole') || 'owner';
+  const sections = document.querySelectorAll('.module-section');
+
+  // --- Family モード（学習モード）---
+  if (role === 'family') {
+    sections.forEach(sec => {
+      const id = sec.id;
+      // 攻撃系・暗号系を非表示
+      if (id === 'simulator' || id === 'crypto' || id === 'exploit') {
+        sec.style.display = 'none';
+      }
+    });
+
+    // 学習系ページへ強制遷移
+    const learnSection = document.getElementById('learn') 
+                      || document.getElementById('threat') 
+                      || document.getElementById('packet');
+    if (learnSection) {
+      // active クラスを付け替え
+      sections.forEach(sec => sec.classList.remove('active'));
+      learnSection.classList.add('active');
+      window.location.hash = '#' + learnSection.id;
+    }
+
+    // 学習モードバッジを追加（任意）
+    const header = document.querySelector('.section-header');
+    if (header) {
+      const badge = document.createElement('span');
+      badge.textContent = '👨‍🏫 学習モード';
+      badge.style.marginLeft = '12px';
+      badge.style.color = 'var(--primary)';
+      badge.style.fontWeight = 'bold';
+      header.appendChild(badge);
+    }
+  }
+});
+</script>
+
+    <!-- JavaScript - Core Functions -->
+    <script>
+        // ========== STORAGE & STATE MANAGEMENT ==========
+        const STORAGE_KEY = 'whitehacker_lab_state';
+        
+        class LabState {
+            constructor() {
+                this.xp = 0;
+                this.level = 1;
+                this.badges = [];
+                this.skills = {
+                    'Attack': 0,
+                    'Crypto': 0,
+                    'Packet': 0,
+                    'CTF': 0,
+                    'STRIDE': 0
+                };
+                this.challenges = {
+                    'base64': false,
+                    'rot13': false,
+                    'jwt': false
+                };
+                this.tried = {};
+                this.load();
+            }
+            
+            load() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const loadedData = JSON.parse(saved);
+                    Object.assign(this, loadedData);
+                    
+                    // Migrate old skills format if needed
+                    if (!this.skills['Attack'] && (this.skills['SQLi'] || this.skills['XSS'])) {
+                        this.skills['Attack'] = (this.skills['SQLi'] || 0) + (this.skills['XSS'] || 0);
+                        delete this.skills['SQLi'];
+                        delete this.skills['XSS'];
+                        this.save();
+                    }
+                }
+            }
+            
+            save() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    xp: this.xp,
+                    level: this.level,
+                    badges: this.badges,
+                    skills: this.skills,
+                    challenges: this.challenges,
+                    tried: this.tried
+                }));
+            }
+            
+            addXP(amount, skill) {
+                this.xp += amount;
+                if (skill && this.skills[skill] !== undefined) {
+                    this.skills[skill] += amount;
+                }
+                
+                const xpPerLevel = 1000;
+                this.level = Math.floor(this.xp / xpPerLevel) + 1;
+                
+                this.save();
+                this.updateUI();
+            }
+            
+            addBadge(badge) {
+                if (!this.badges.includes(badge)) {
+                    this.badges.push(badge);
+                    this.save();
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('xp-display').textContent = this.xp;
+                document.getElementById('level-display').textContent = this.level;
+                document.getElementById('badge-display').textContent = this.badges.length;
+                
+                const xpInLevel = this.xp % 1000;
+                const percentage = (xpInLevel / 1000) * 100;
+                document.getElementById('xp-bar').style.width = percentage + '%';
+                document.getElementById('xp-bar').textContent = Math.round(percentage) + '%';
+                document.getElementById('xp-text').textContent = xpInLevel + ' / 1000 XP to next level';
+                
+                // Update badge list
+                const badgeList = document.getElementById('badge-list');
+                if (this.badges.length > 0) {
+                    badgeList.innerHTML = this.badges.map(b => `<span class="badge">${b}</span>`).join('');
+                }
+                
+                // Update session info
+                const lastUpdate = new Date().toLocaleString('ja-JP');
+                document.getElementById('session-info').textContent = 
+                    `Level: ${this.level} | XP: ${this.xp} | Badges: ${this.badges.length} | Last Update: ${lastUpdate}`;
+                
+                // Update radar chart
+                if (window.Chart && radarChart) {
+                    initRadarChart();
+                }
+            }
+        }
+        
+        let radarChart = null;
+        const state = new LabState();
+        state.updateUI();
+        
+        // ========== MODULE NAVIGATION ==========
+        function switchModule(module) {
+            document.querySelectorAll('.module-section').forEach(el => el.classList.remove('active'));
+            const sec = document.getElementById(module);
+            if (!sec) return;
+            sec.classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.m === module);
+            });
+            document.getElementById('nav-menu').classList.remove('open');
+            renderWhere(module);
+            window.scrollTo(0, 0);
+        }
+        
+        function toggleNav() {
+            document.getElementById('nav-menu').classList.toggle('open');
+        }
+        
+        // ========== 1. ATTACK SIMULATOR ==========
+        function simulateSQLi() {
+            const username = document.getElementById('sqli-username').value;
+            const password = document.getElementById('sqli-password').value;
+            const output = document.getElementById('sqli-output');
+            
+            // Simulate SQLi detection
+            const isSQLi = username.includes("'") || username.includes("--") || username.includes("/*");
+            
+            let result = `
+[SQLi DETECTION RESULT]
+Username: ${username}
+Password: ${'*'.repeat(password.length)}
+Attack Pattern Detected: ${isSQLi ? 'YES ⚠️' : 'NO ✅'}
+            `.trim();
+            
+            if (isSQLi) {
+                result += `\n\nVulnerability Details:
+- Input validation missing
+- Parameterized queries not used
+- Risk Level: CRITICAL
+                `;
+                output.classList.add('error');
+                state.addXP(50, 'Attack');
+                state.addBadge('SQLi Novice');
+            } else {
+                output.classList.remove('error');
+            }
+            
+            output.textContent = result;
+            output.style.display = 'block';
+        }
+        
+        function simulateXSS() {
+            const payload = document.getElementById('xss-payload').value;
+            const output = document.getElementById('xss-output');
+            
+            const isXSS = payload.includes('<') && (payload.includes('script') || payload.includes('onerror') || payload.includes('onclick'));
+            
+            let result = `
+[XSS DETECTION RESULT]
+Payload: ${payload.substring(0, 50)}${payload.length > 50 ? '...' : ''}
+XSS Pattern Detected: ${isXSS ? 'YES ⚠️' : 'NO ✅'}
+            `.trim();
+            
+            if (isXSS) {
+                result += `\n\nVulnerability Details:
+- HTML encoding not applied
+- Event handler detected
+- Risk Level: HIGH
+- DOM XSS Vector: YES
+                `;
+                output.classList.add('error');
+                state.addXP(50, 'Attack');
+                state.addBadge('XSS Scholar');
+            } else {
+                output.classList.remove('error');
+            }
+            
+            output.textContent = result;
+            output.style.display = 'block';
+        }
+        
+        function simulateHashCrack() {
+            const hash = document.getElementById('hash-input').value;
+            const output = document.getElementById('hash-output');
+            
+            // Simple hash pattern detection
+            const hashPatterns = {
+                'md5': /^[a-f0-9]{32}$/i,
+                'sha1': /^[a-f0-9]{40}$/i,
+                'sha256': /^[a-f0-9]{64}$/i
+            };
+            
+            let hashType = 'unknown';
+            for (const [type, pattern] of Object.entries(hashPatterns)) {
+                if (pattern.test(hash)) {
+                    hashType = type;
+                    break;
+                }
+            }
+            
+            let result = `
+[HASH ANALYSIS]
+Hash: ${hash.substring(0, 32)}${hash.length > 32 ? '...' : ''}
+Detected Type: ${hashType.toUpperCase()}
+            `.trim();
+            
+            if (hashType !== 'unknown') {
+                result += `\n\nCracking Status:
+- Dictionary attack: Simulated
+- Common passwords checked: 1000
+- Wordlist iterations: 10000
+- Status: No match found (upgrade to premium for larger wordlists)
+                `;
+                state.addXP(30, 'Crypto');
+                output.classList.add('warning');
+            } else {
+                result += `\nInvalid hash format`;
+                output.classList.add('error');
+            }
+            
+            output.textContent = result;
+            output.style.display = 'block';
+        }
+        
+        function simulateCSRF() {
+            const output = document.getElementById('csrf-output');
+            
+            const result = `
+[CSRF ATTACK SIMULATION]
+Forged Request Intercepted: YES ⚠️
+
+Details:
+- Method: POST /api/transfer
+- Victim Cookie: ${document.cookie || 'No cookies present'}
+- CSRF Token: Missing
+- SameSite Flag: Not Set
+- Origin Check: Failed
+
+Mitigation:
+1. Implement SameSite=Strict
+2. Require CSRF tokens
+3. Verify Origin headers
+4. Use POST for state changes
+            `.trim();
+            
+            output.classList.add('warning');
+            output.textContent = result;
+            output.style.display = 'block';
+            
+            state.addXP(40, 'Attack');
+        }
+        
+        // ========== 2. CRYPTO PLAYGROUND ==========
+        async function performAESGCM() {
+            const plaintext = document.getElementById('aes-plaintext').value;
+            const password = document.getElementById('aes-password').value;
+            const output = document.getElementById('aes-output');
+            
+            if (!plaintext || !password) {
+                output.textContent = 'Please enter both plaintext and password';
+                output.classList.add('error');
+                output.style.display = 'block';
+                return;
+            }
+            
+            try {
+                // Derive key from password
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const key = await crypto.subtle.importKey('raw', hashBuffer, 'AES-GCM', false, ['encrypt']);
+                
+                // Generate IV
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                
+                // Encrypt
+                const ciphertext = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    encoder.encode(plaintext)
+                );
+                
+                const result = `
+[AES-GCM ENCRYPTION]
+Plaintext: ${plaintext}
+Ciphertext (hex): ${Array.from(new Uint8Array(ciphertext)).map(b => b.toString(16).padStart(2, '0')).join('')}
+IV (hex): ${Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('')}
+Key Size: 256-bit
+Algorithm: AES-GCM
+Encryption Successful ✅
+                `.trim();
+                
+                output.classList.remove('error');
+                output.classList.add('success');
+                output.textContent = result;
+                output.style.display = 'block';
+                
+                state.addXP(75, 'Crypto');
+                state.addBadge('Cryptographer');
+            } catch (e) {
+                output.textContent = 'Encryption error: ' + e.message;
+                output.classList.add('error');
+                output.style.display = 'block';
+            }
+        }
+        
+        async function performECDH() {
+            const output = document.getElementById('ecdh-output');
+            
+            try {
+                // Generate two key pairs
+                const keyPair1 = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+                const keyPair2 = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+                
+                // Derive shared secret
+                const sharedSecret = await crypto.subtle.deriveKey(
+                    { name: 'ECDH', public: keyPair2.publicKey },
+                    keyPair1.privateKey,
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                
+                const result = `
+[ECDH KEY EXCHANGE]
+Curve: P-256 (secp256r1)
+Key Exchange Successful ✅
+
+Key Pair 1: Generated
+Key Pair 2: Generated
+
+Shared Secret: Derived successfully
+Key Size: 256-bit
+Algorithm: ECDH with AES-GCM
+
+Security Assessment:
+- Forward Secrecy: Supported
+- Perfect Forward Secrecy (PFS): YES
+- Quantum Resistant: NO (use post-quantum algorithms for quantum safety)
+                `.trim();
+                
+                output.classList.remove('error');
+                output.classList.add('success');
+                output.textContent = result;
+                output.style.display = 'block';
+                
+                state.addXP(75, 'Crypto');
+            } catch (e) {
+                output.textContent = 'ECDH error: ' + e.message;
+                output.classList.add('error');
+                output.style.display = 'block';
+            }
+        }
+        
+        async function performPBKDF2() {
+            const password = document.getElementById('pbkdf2-password').value;
+            const output = document.getElementById('pbkdf2-output');
+            
+            if (!password) {
+                output.textContent = 'Please enter a password';
+                output.classList.add('error');
+                output.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const encoder = new TextEncoder();
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                
+                const key = await crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: salt, iterations: 100000, hash: 'SHA-256' },
+                    await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveKey']),
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                
+                const result = `
+[PBKDF2 KEY DERIVATION]
+Algorithm: PBKDF2-HMAC-SHA256
+Iterations: 100,000
+Salt (hex): ${Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('')}
+Derived Key Size: 256-bit
+Key Derivation: Successful ✅
+
+Security Notes:
+- High iteration count provides strong security
+- Salt prevents rainbow table attacks
+- NIST recommended iterations: 600,000+ (consider increasing for production)
+                `.trim();
+                
+                output.classList.remove('error');
+                output.classList.add('success');
+                output.textContent = result;
+                output.style.display = 'block';
+                
+                state.addXP(50, 'Crypto');
+            } catch (e) {
+                output.textContent = 'PBKDF2 error: ' + e.message;
+                output.classList.add('error');
+                output.style.display = 'block';
+            }
+        }
+        
+        function generateCSPRNG() {
+            const output = document.getElementById('csprng-output');
+            
+            try {
+                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                const randomHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                const randomBase64 = btoa(String.fromCharCode.apply(null, randomBytes));
+                
+                const result = `
+[CSPRNG TOKEN GENERATION]
+Algorithm: Web Crypto API (OS CSPRNG)
+Byte Length: 32 bytes (256 bits)
+
+Hex Format:
+${randomHex}
+
+Base64 Format:
+${randomBase64}
+
+Token Quality:
+- Entropy Source: System CSPRNG
+- Uniqueness: ✅ Guaranteed
+- Predictability: ✅ Not predictable
+- Use Case: Session tokens, CSRF tokens, nonces
+                `.trim();
+                
+                output.classList.remove('error');
+                output.classList.add('success');
+                output.textContent = result;
+                output.style.display = 'block';
+                
+                state.addXP(30, 'Crypto');
+            } catch (e) {
+                output.textContent = 'CSPRNG error: ' + e.message;
+                output.classList.add('error');
+                output.style.display = 'block';
+            }
+        }
+        
+        // ========== 3. PACKET ANALYZER ==========
+        function analyzeHTTPHeaders() {
+            const output = document.getElementById('http-output');
+            
+            const result = `
+[HTTP HEADER SECURITY ANALYSIS]
+
+Current Page Headers:
+- Content-Type: text/html
+- Connection: keep-alive
+
+Security Headers Status:
+- Content-Security-Policy: ❌ Missing (XSS risk)
+- X-Content-Type-Options: ❌ Missing (MIME sniffing risk)
+- X-Frame-Options: ❌ Missing (Clickjacking risk)
+- Strict-Transport-Security: ✅ Present (HTTPS enforced)
+- X-XSS-Protection: ⚠️ Deprecated
+
+Recommendations:
+1. Add CSP header
+2. Set X-Content-Type-Options: nosniff
+3. Set X-Frame-Options: DENY
+4. Implement HSTS policy
+5. Add Referrer-Policy
+            `.trim();
+            
+            output.classList.add('warning');
+            output.textContent = result;
+            output.style.display = 'block';
+            
+            state.addXP(40, 'Packet');
+        }
+        
+        function analyzeJWT() {
+            const token = document.getElementById('jwt-input').value.trim();
+            const output = document.getElementById('jwt-output');
+            
+            if (!token) {
+                output.textContent = 'Please paste a JWT token';
+                output.classList.add('error');
+                output.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format (expected 3 parts)');
+                }
+                
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                const signature = parts[2];
+                
+                let result = `
+[JWT ANALYSIS]
+Format: Valid JWT (3 parts) ✅
+
+HEADER:
+${JSON.stringify(header, null, 2)}
+
+PAYLOAD:
+${JSON.stringify(payload, null, 2)}
+
+SIGNATURE: ${signature.substring(0, 20)}...
+
+Vulnerability Check:
+- alg: none vulnerability: ${header.alg === 'none' ? '⚠️ YES - CRITICAL' : '✅ NO'}
+- Algorithm: ${header.alg}
+                `.trim();
+                
+                if (header.alg === 'none') {
+                    result += `\n\nCRITICAL VULNERABILITY:
+The JWT uses alg:none, allowing token forgery without signature verification!
+This is a severe security flaw.
+                    `;
+                    output.classList.add('error');
+                    state.addXP(100, 'Packet');
+                } else {
+                    output.classList.add('success');
+                    state.addXP(50, 'Packet');
+                }
+                
+                output.textContent = result;
+                output.style.display = 'block';
+            } catch (e) {
+                output.textContent = 'JWT parsing error: ' + e.message;
+                output.classList.add('error');
+                output.style.display = 'block';
+            }
+        }
+        
+        function showCookieMatrix() {
+            const output = document.getElementById('cookie-output');
+            
+            const cookies = document.cookie.split(';').map(c => c.trim()).filter(c => c);
+            
+            let result = `
+[COOKIE MATRIX]
+Total Cookies: ${cookies.length}
+
+Cookies:
+${cookies.length > 0 ? cookies.map(c => `- ${c}`).join('\n') : '(No cookies found)'}
+
+Cookie Security Analysis:
+- HttpOnly Flag: ❌ Not set (XSS risk)
+- Secure Flag: ⚠️ Recommended when over HTTPS
+- SameSite: ❌ Missing (CSRF risk)
+
+Recommendations:
+1. Set HttpOnly flag to prevent JavaScript access
+2. Use Secure flag for HTTPS-only transmission
+3. Implement SameSite=Strict to prevent CSRF
+            `.trim();
+            
+            output.classList.add('warning');
+            output.textContent = result;
+            output.style.display = 'block';
+            
+            state.addXP(30, 'Packet');
+        }
+        
+        // ========== 4. CTF CHALLENGES ==========
+        function initCTFChallenges() {
+            // Base64 challenge
+            const base64Flag = 'flag{base64_is_not_encryption}';
+            const base64Encoded = btoa(base64Flag);
+            document.getElementById('base64-challenge-text').textContent = `Encoded: ${base64Encoded}`;
+            
+            // ROT13 challenge
+            const rot13Flag = 'flag{rot13_is_weak_cipher}';
+            const rot13Encoded = rot13Flag.replace(/[a-zA-Z]/g, function(c) {
+                return String.fromCharCode((c <= 'Z' ? 90 : 122) >= (c = c.charCodeAt(0) + 13) ? c : c - 26);
+            });
+            document.getElementById('rot13-challenge-text').textContent = `Encoded: ${rot13Encoded}`;
+            
+            // JWT challenge
+            const jwtChallenge = 'eyJhbGciOiJub25lIn0.eyJmbGFnIjoiZmxhZ3tqd3RfYWxnX25vbmV9In0.';
+            document.getElementById('jwt-challenge-token').textContent = `Token: ${jwtChallenge}`;
+        }
+        
+        function submitBase64Flag() {
+            const input = document.getElementById('base64-flag-input').value;
+            const result = document.getElementById('base64-result');
+            const expected = 'flag{base64_is_not_encryption}';
+            
+            if (input === expected) {
+                result.innerHTML = '<span class="badge" style="background: var(--primary);">✅ CORRECT!</span>';
+                state.addXP(100, 'CTF');
+                state.addBadge('Base64 Master');
+                state.challenges['base64'] = true;
+            } else {
+                result.innerHTML = '<span class="badge danger">❌ Incorrect</span>';
+            }
+        }
+        
+        function submitROT13Flag() {
+            const input = document.getElementById('rot13-flag-input').value;
+            const result = document.getElementById('rot13-result');
+            const expected = 'flag{rot13_is_weak_cipher}';
+            
+            if (input === expected) {
+                result.innerHTML = '<span class="badge" style="background: var(--primary);">✅ CORRECT!</span>';
+                state.addXP(100, 'CTF');
+                state.addBadge('Cryptanalyst');
+                state.challenges['rot13'] = true;
+            } else {
+                result.innerHTML = '<span class="badge danger">❌ Incorrect</span>';
+            }
+        }
+        
+        function submitJWTFlag() {
+            const input = document.getElementById('jwt-flag-input').value;
+            const result = document.getElementById('jwt-result');
+            const expected = 'flag{jwt_alg_none}';
+            
+            if (input === expected) {
+                result.innerHTML = '<span class="badge" style="background: var(--primary);">✅ CORRECT!</span>';
+                state.addXP(150, 'CTF');
+                state.addBadge('JWT Breaker');
+                state.challenges['jwt'] = true;
+            } else {
+                result.innerHTML = '<span class="badge danger">❌ Incorrect</span>';
+            }
+        }
+        
+        // ========== 5. STRIDE ==========
+        function toggleThreat(threat) {
+            const detail = document.getElementById(threat + '-detail');
+            const isHidden = detail.style.display === 'none' || !detail.style.display;
+            detail.style.display = isHidden ? 'block' : 'none';
+            
+            // Award XP when learning about threat
+            if (isHidden) {
+                state.addXP(25, 'STRIDE');
+            }
+        }
+        
+        // ========== 6. PASSPORT ==========
+        function exportProgress() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `whitehacker-lab-progress-${Date.now()}.json`;
+            link.click();
+        }
+        
+        function importProgress() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        Object.assign(state, imported);
+                        state.save();
+                        state.updateUI();
+                        alert('Progress imported successfully!');
+                    } catch (err) {
+                        alert('Invalid file format');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+        
+        function resetProgress() {
+            if (confirm('Are you sure? This will reset all progress.')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+        
+        // ========== RADAR CHART ==========
+        
+        function initRadarChart() {
+            const canvas = document.getElementById('skill-radar');
+            if (!canvas || !window.Chart) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Get max skill value
+            const maxSkillValue = Math.max(
+                state.skills['Attack'] || 0,
+                state.skills['Crypto'] || 0,
+                state.skills['Packet'] || 0,
+                state.skills['CTF'] || 0,
+                state.skills['STRIDE'] || 0,
+                100
+            );
+            
+            // Normalize to 100+ scale
+            const normalizedMax = Math.ceil(maxSkillValue / 100) * 100 || 100;
+            
+            // SecurityScore from badges and challenges
+            const securityScore = (state.badges.length * 20) + 
+                                  (Object.values(state.challenges).filter(Boolean).length * 25);
+            
+            // Destroy existing chart if present
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Attack', 'Crypto', 'Packet', 'CTF', 'STRIDE', 'Security'],
+                    datasets: [{
+                        label: 'Skill Level (XP)',
+                        data: [
+                            state.skills['Attack'] || 0,
+                            state.skills['Crypto'] || 0,
+                            state.skills['Packet'] || 0,
+                            state.skills['CTF'] || 0,
+                            state.skills['STRIDE'] || 0,
+                            securityScore
+                        ],
+                        borderColor: 'rgba(0, 255, 65, 1)',
+                        backgroundColor: 'rgba(0, 255, 65, 0.15)',
+                        pointBackgroundColor: 'rgba(0, 255, 65, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(0, 255, 65, 1)',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        borderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: undefined,
+                    scales: {
+                        r: {
+                            max: normalizedMax,
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'rgba(224, 224, 224, 0.6)',
+                                font: { 
+                                    family: "'JetBrains Mono', monospace",
+                                    size: 11
+                                },
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(0, 255, 65, 0.08)',
+                                drawBorder: true,
+                                borderColor: 'rgba(0, 255, 65, 0.2)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(0, 217, 255, 1)',
+                                font: { 
+                                    size: 12, 
+                                    weight: 'bold', 
+                                    family: "'JetBrains Mono', monospace" 
+                                },
+                                padding: 12
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: 'rgba(224, 224, 224, 1)',
+                                font: { 
+                                    family: "'JetBrains Mono', monospace",
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                padding: 15,
+                                usePointStyle: true
+                            },
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 14, 39, 0.9)',
+                            titleColor: 'rgba(0, 255, 65, 1)',
+                            bodyColor: 'rgba(224, 224, 224, 1)',
+                            borderColor: 'rgba(0, 255, 65, 1)',
+                            borderWidth: 1,
+                            titleFont: { family: "'JetBrains Mono', monospace" },
+                            bodyFont: { family: "'JetBrains Mono', monospace" },
+                            padding: 10,
+                            caretPadding: 10
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ========== iCLOUD / QUICK-REF / SECURITY-HUB ==========
+function saveToiCloud() {
+  const data = {
+    source: 'whitehacker-lab', exportedAt: Date.now(),
+    state: {
+      completedChallenges: completedList(),
+      points: state.xp,
+      level: state.level,
+      badges: [...state.badges]
+    }
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const filename = `whitehacker-${new Date().toISOString().slice(0,10)}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+  localStorage.setItem('wh_icloud_last',JSON.stringify({savedAt:Date.now(),filename}));
+  showNotification('💾 iCloud Driveに保存しました','success');
+  if(/iPhone|iPad|iPod/.test(navigator.userAgent))
+    setTimeout(()=>alert(`"${filename}"\nファイルアプリ → iCloud Drive に移動してください。`),500);
+}
+
+function sendToQuickRef() {
+  const completed = completedList().slice(0,8);
+  const payload = {
+    source:'whitehacker-lab', destination:'quick-ref',
+    title:`ハッキング学習ログ ${new Date().toLocaleDateString('ja-JP')}`,
+    tags:['セキュリティ','whitehacker','ハッキング'],
+    body:`完了チャレンジ: ${completed.join(', ')||'なし'}\nポイント: ${state.xp} / レベル: ${state.level}`,
+    fields:[
+      {key:'ポイント', value:String(state.xp)},
+      {key:'レベル',   value:String(state.level)},
+      {key:'バッジ数', value:String(state.badges.length)},
+      {key:'完了数',   value:String(completedList().length)}
+    ],
+    date: new Date().toISOString()
+  };
+  try {
+    localStorage.setItem('is_transfer',JSON.stringify(payload));
+    showNotification('📤 quick-refに送信しました','success');
+  } catch(e) { showNotification('送信失敗: '+e.message,'error'); }
+}
+
+function syncToSecurityHub() {
+  // 体験済み・正解済みの単元を security-hub に渡す
+  let n = 0;
+  Object.keys(state.tried).forEach(tp => { if (reportSkill(tp)) n++; });
+  showNotification(n ? '🔗 security-hub に ' + n + ' 件の進み具合を渡しました' : '🔗 まだ渡せる進み具合がありません（カードを体験してください）');
+}
+
+function injectHubButtons() {
+  const bar = document.createElement('div');
+  bar.style.cssText = [
+    'position:fixed;bottom:calc(env(safe-area-inset-bottom) + 12px)',
+    'right:16px;display:flex;flex-direction:column;gap:6px;z-index:9999'
+  ].join(';');
+  bar.innerHTML = `
+    <button onclick="saveToiCloud()" style="padding:8px 14px;background:rgba(0,255,65,0.12);border:1px solid rgba(0,255,65,0.3);border-radius:10px;color:#00ff41;font-size:12px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">💾 iCloud保存</button>
+    <button onclick="sendToQuickRef()" style="padding:8px 14px;background:rgba(0,217,255,0.12);border:1px solid rgba(0,217,255,0.3);border-radius:10px;color:#00d9ff;font-size:12px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">📤 quick-refへ送る</button>
+    <button onclick="syncToSecurityHub()" style="padding:8px 14px;background:rgba(255,0,110,0.12);border:1px solid rgba(255,0,110,0.3);border-radius:10px;color:#ff006e;font-size:12px;font-weight:600;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;">🔗 security-hubへ同期</button>
+  `;
+  document.body.appendChild(bar);
+}
+
+
+// ========== 学習の現在地・問題文の連携 ==========
+function completedList() { return Object.keys(state.challenges).filter(k => state.challenges[k]); }
+
+function showNotification(msg, kind) {
+  let el = document.getElementById('toast-wh');
+  if (!el) { el = document.createElement('div'); el.id = 'toast-wh'; document.body.appendChild(el); }
+  el.textContent = msg; el.className = kind === 'error' ? 'error' : ''; el.style.display = 'block';
+  clearTimeout(showNotification._t);
+  showNotification._t = setTimeout(() => { el.style.display = 'none'; }, 2500);
+}
+
+// 学ぶ順番（この順に進むと、前の知識を次で使えます）
+const STEPS = [
+  { id:'simulator', name:'攻撃を知る', en:'Attack Simulator',
+    learn:'代表的な攻撃（SQLi・XSS・ハッシュ解析・CSRF）が「なぜ成立するか」を、安全な模擬で体験します。',
+    why:'守り方を学ぶ前に、まず攻撃側の仕組みを知る入口です。',
+    topics:['sqli','xss','hash','csrf'] },
+  { id:'crypto', name:'守る道具（暗号）を使う', en:'Crypto Playground',
+    learn:'暗号化(AES-GCM)・鍵交換(ECDH)・鍵の作り方(PBKDF2)・安全な乱数(CSPRNG)を、実際のブラウザ機能で動かします。',
+    why:'①で見た攻撃を防ぐ「道具」の側です。ここで使う言葉が、次の通信分析とCTFに出てきます。',
+    topics:['aes','ecdh','pbkdf2','csprng'] },
+  { id:'packet', name:'通信を読む', en:'Packet Analyzer',
+    learn:'HTTPヘッダー・JWT（ログイン用の札）・Cookie の中身を読み、危ない設定を見つけます。',
+    why:'②の道具が、実際の通信でどう使われるかを見ます。ここで見る JWT は、CTF の問題にそのまま出ます。',
+    topics:['http','jwt','cookie'] },
+  { id:'ctf', name:'実戦で解く（CTF）', en:'CTF Challenge',
+    learn:'隠された答え（flag）を見つける問題です。①〜③で学んだことを使って解きます。',
+    why:'学習の総仕上げです。分からない時は、問題の下にある「復習リンク」から該当の単元へ戻れます。',
+    topics:['c_b64','c_rot','c_jwt'] },
+  { id:'stride', name:'設計の目で整理する（STRIDE）', en:'STRIDE',
+    learn:'脅威を6つの型（なりすまし・改ざん・否認・情報漏洩・サービス停止・権限昇格）で整理する考え方です。',
+    why:'個々の攻撃を、設計の段階で漏れなく考える見方に広げます。',
+    topics:['s_spoof','s_tamper','s_repud','s_info','s_dos','s_elev'] },
+  { id:'passport', name:'成績を見る', en:'Skill Passport',
+    learn:'XP・レベル・バッジ・スキルのレーダーで、ここまでの学習を確認します。',
+    why:'どの単元が伸びていて、どれが手つかずかが分かります。',
+    topics:[] }
+];
+
+// 各カードの説明（学ぶこと / やること / 見るところ / 関連）
+const TOPICS = {
+  sqli:{t:'SQLインジェクション', learn:'入力欄に細工した文字を入れて、データベースへの命令を書き換える攻撃です。', do:'ユーザー名に admin\' OR \'1\'=\'1 を入れて実行します。', look:'「Attack Pattern Detected」の判定と、下に出る原因（入力の検証なし）。', links:[['stride','s_tamper','改ざんの型（STRIDE）で整理する']]},
+  xss:{t:'XSS', learn:'ページに入り込んだ命令（スクリプト）が、閲覧者のブラウザで動いてしまう攻撃です。', do:'例の &lt;img src=x onerror=…&gt; をそのまま入力して実行します。', look:'どの書き方が「イベントハンドラ」として検出されるか。', links:[['packet','http','対策のヘッダー（CSP）を見る']]},
+  hash:{t:'ハッシュ解析', learn:'ハッシュは元に戻せませんが、よくある言葉を片っ端から試すと当たることがあります（辞書攻撃）。', do:'32文字の英数字（MD5）などを入れて実行します。', look:'ハッシュの長さで種類（MD5/SHA-1/SHA-256）が分かること。', links:[['crypto','pbkdf2','対策：PBKDF2 で遅くする']]},
+  csrf:{t:'CSRF', learn:'ログイン中のあなたのブラウザに、本人が知らない送信を勝手にさせる攻撃です。', do:'ボタンを押して、模擬の偽リクエストを見ます。', look:'「Cookie」「CSRFトークン」「SameSite」の欄。', links:[['packet','cookie','Cookie の SameSite を見る']]},
+  aes:{t:'AES-GCM 暗号化', learn:'共通の鍵で文字を暗号化し、改ざんも検出できる方式です。実際のブラウザ機能（WebCrypto）で動きます。', do:'文章とパスワードを入れて Encrypt を押します。', look:'IV（毎回変わる値）と暗号文が、同じ入力でも毎回変わること。', links:[['ctf','c_rot','比べる：ROT13 は暗号ではない'],['@','https://norinori-jan.github.io/crypto-vault/lab.html','応用：VAULT LAB で同じ方式を試す']]},
+  ecdh:{t:'ECDH 鍵交換', learn:'会話の前に秘密の鍵を、盗聴されても安全に共有する方法です。', do:'ボタンを押して、2人分の鍵から同じ秘密ができるのを見ます。', look:'両者が別々に計算した秘密が一致すること。', links:[]},
+  pbkdf2:{t:'PBKDF2 鍵導出', learn:'パスワードから、暗号に使う鍵を作ります。わざと遅くして総当たりを防ぎます。', do:'パスワードを入れて Derive Key を押します。', look:'反復回数（多いほど解析に時間がかかる）。', links:[['simulator','hash','攻撃側：ハッシュ解析と比べる'],['@','https://norinori-jan.github.io/crypto-vault/lab.html','応用：VAULT LAB で試す']]},
+  csprng:{t:'安全な乱数', learn:'予測できない乱数のことです。トークンや鍵に使います。Math.random は使いません。', do:'ボタンを押してトークンを作ります。', look:'毎回違う値になること、予測できないこと。', links:[]},
+  http:{t:'HTTPヘッダー検査', learn:'サーバーの返事に付く設定（CSP など）で、攻撃をどれだけ防げるかが決まります。', do:'ボタンを押して、このページのヘッダーを調べます。', look:'Missing（不足）の行。XSS やクリックジャッキングへの備えです。', links:[['simulator','xss','攻撃側：XSS を見る']]},
+  jwt:{t:'JWT 解析', learn:'JWT は「ヘッダー.中身.署名」の3つを「.」でつないだログイン用の札です。ヘッダーと中身は Base64 で、誰でも読めます。', do:'JWT を貼って Analyze JWT を押します。', look:'ヘッダーの alg が none だと署名なしで通ってしまいます。', links:[['ctf','c_jwt','この知識で解く：JWT の問題'],['ctf','c_b64','中身を読む：Base64 の問題']]},
+  cookie:{t:'Cookie の検査', learn:'Cookie の属性（HttpOnly・Secure・SameSite）で、盗まれやすさが変わります。', do:'ボタンを押して、いま見える Cookie を確認します。', look:'HttpOnly・Secure・SameSite の有無。', links:[['simulator','csrf','攻撃側：CSRF を見る']]},
+  c_b64:{t:'CTF：Base64', learn:'Base64 は暗号ではなく、ただの文字の置き換えです。誰でも元に戻せます。', do:'下の「Encoded:」の文字列をデコードして、flag{…} を入力します。', look:'末尾が = の文字列は Base64 のことが多いです。', hint:'ブラウザのコンソールで atob("文字列") を実行すると元に戻ります。', links:[['packet','jwt','復習：JWT の中身も Base64 です'],['crypto','aes','復習：本物の暗号（AES）との違い']]},
+  c_rot:{t:'CTF：ROT13', learn:'アルファベットを13文字ずらすだけの古い方式です。もう一度ずらすと元に戻ります。', do:'「Encoded:」の文字列を13文字ずらし戻して、flag{…} を入力します。', look:'flag{ の形になるように。a→n、b→o…', hint:'A→N、N→A のように13文字ずらすと、2回で元に戻ります。', links:[['crypto','aes','復習：本物の暗号（AES）との違い']]},
+  c_jwt:{t:'CTF：JWT', learn:'署名が none の JWT は、中身が改ざんされていても検証を通ってしまいます。', do:'下の Token は「.」で3つに分かれています。1つ目と2つ目の「.」の間（真ん中）をデコードして、flag を入力します。', look:'「.」で3つに分かれていること。真ん中に flag{…} が入っています。', hint:'真ん中の文字列を Base64 でデコードします。「通信を読む」の JWT Analyzer に、同じ形を貼ってみてください。', links:[['packet','jwt','復習：JWT Analyzer'],['stride','s_spoof','考え方：なりすまし（STRIDE）']]},
+  s_spoof:{t:'なりすまし', learn:'他人のふりをして認証を通る脅威です。', do:'Details を開いて、脅威・事例・対策を読みます。', look:'対策（MFA など）。', links:[['ctf','c_jwt','実例：JWT の alg:none']]},
+  s_tamper:{t:'改ざん', learn:'通信中やデータそのものを書き換える脅威です。', do:'Details を開きます。', look:'対策（HTTPS・入力検証・署名）。', links:[['simulator','sqli','実例：SQLi']]},
+  s_repud:{t:'否認', learn:'「やっていない」と言われても否定できない状態です。', do:'Details を開きます。', look:'対策（監査ログ・デジタル署名）。', links:[]},
+  s_info:{t:'情報漏洩', learn:'見られてはいけない情報が外に出る脅威です。', do:'Details を開きます。', look:'事例（エラーメッセージ・ディレクトリ列挙）。', links:[['packet','http','実例：ヘッダー検査']]},
+  s_dos:{t:'サービス停止', learn:'大量のリクエストなどで、サービスを使えなくする脅威です。', do:'Details を開きます。', look:'対策（レート制限）。', links:[]},
+  s_elev:{t:'権限昇格', learn:'本来持たない権限を得る脅威です。', do:'Details を開きます。', look:'対策（RBAC・権限検証）。', links:[]}
+};
+const TOPIC_MODULE = {};
+STEPS.forEach(s => s.topics.forEach(tp => { TOPIC_MODULE[tp] = s.id; }));
+
+function whRole() { return localStorage.getItem('sessionRole') || 'owner'; }
+function whSteps() {
+  return STEPS.filter(s => !(whRole() === 'family' && ['simulator', 'crypto'].includes(s.id)));
+}
+function stepDone(s) { return s.topics.length > 0 && s.topics.every(tp => state.tried[tp]); }
+
+function renderWhere(modId) {
+  const box = document.getElementById('where');
+  if (!box) return;
+  const steps = whSteps();
+  const cur = modId || (document.querySelector('.module-section.active') || {}).id || steps[0].id;
+  const idx = Math.max(0, steps.findIndex(s => s.id === cur));
+  const s = steps[idx];
+  const tried = s.topics.filter(tp => state.tried[tp]).length;
+  box.innerHTML =
+    '<div class="w-top"><span class="w-step">STEP ' + (idx + 1) + ' / ' + steps.length + '</span>' +
+    '<span class="w-name">' + s.name + '</span><span class="w-en">' + s.en + '</span></div>' +
+    '<div class="w-path">' + steps.map((x, i) =>
+      '<button data-go="' + x.id + '" class="' + (i === idx ? 'now' : (stepDone(x) ? 'done' : '')) + '">' +
+      (i + 1) + '. ' + x.name.split('（')[0] + (stepDone(x) ? ' ✓' : '') + '</button>').join('') + '</div>' +
+    '<details open><summary>この単元の説明（タップで開閉）</summary><dl><dt>何の勉強？</dt><dd>' + s.learn + '</dd>' +
+    '<dt>なぜここ？</dt><dd>' + s.why + '</dd>' +
+    (s.topics.length ? '<dt>体験した数</dt><dd><div class="w-topics">' + s.topics.map(tp =>
+      '<span class="' + (state.tried[tp] ? 'ok' : '') + '">' + (state.tried[tp] ? '✓ ' : '') + TOPICS[tp].t + '</span>').join('') +
+      '</div><div style="margin-top:4px;color:var(--text-muted);font-size:13px;">' + tried + ' / ' + s.topics.length + '</div></dd>' : '') +
+    '</dl></details>' +
+    '<div class="w-nav">' +
+    (idx > 0 ? '<button data-go="' + steps[idx - 1].id + '">← ' + steps[idx - 1].name.split('（')[0] + '</button>' : '<span style="flex:1"></span>') +
+    (idx < steps.length - 1 ? '<button data-go="' + steps[idx + 1].id + '">' + steps[idx + 1].name.split('（')[0] + ' →</button>' : '<span style="flex:1"></span>') +
+    '</div>';
+  box.querySelectorAll('[data-go]').forEach(b => b.onclick = () => switchModule(b.dataset.go));
+  document.querySelectorAll('.card[data-topic]').forEach(c => {
+    if (state.tried[c.dataset.topic]) c.setAttribute('data-done', '1'); else c.removeAttribute('data-done');
+  });
+}
+
+function setupLearning() {
+  document.querySelectorAll('.card[data-topic]').forEach(card => {
+    const id = card.dataset.topic, d = TOPICS[id];
+    if (!d) return;
+    const mod = TOPIC_MODULE[id];
+    const strip = document.createElement('div');
+    strip.className = 'learn-strip';
+    strip.innerHTML =
+      '<div><b>🎓 学ぶこと</b>　' + d.learn + '</div>' +
+      '<div><b>📌 やること</b>　' + d.do + '</div>' +
+      '<div><b>🔍 見るところ</b>　' + d.look + '</div>' +
+      (d.hint ? '<details><summary>💡 ヒントを見る</summary>' + d.hint + '</details>' : '') +
+      (d.links && d.links.length ? '<div class="ls-links">' + d.links.map(l => l[0] === '@' ?
+        '<button class="ext" data-url="' + l[1] + '">↗ ' + l[2] + '</button>' :
+        '<button data-jump="' + l[0] + ':' + l[1] + '">🔗 ' + l[2] + '</button>').join('') + '</div>' : '');
+    const content = card.querySelector('.card-content');
+    card.insertBefore(strip, content);
+    const dg = diagHTML(id);
+    if (dg) { const w = document.createElement('div'); w.innerHTML = dg; card.insertBefore(w.firstChild, content); }
+    strip.querySelectorAll('[data-url]').forEach(b => b.onclick = () => { location.href = b.dataset.url; });
+    strip.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => {
+      const [m, tp] = b.dataset.jump.split(':');
+      switchModule(m);
+      const target = document.querySelector('.card[data-topic="' + tp + '"]');
+      if (target) setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    });
+    // 体験済みの記録：カード内のボタンを押したら
+    card.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b || b.closest('.learn-strip')) return;
+      if (!state.tried[id]) { state.tried[id] = true; state.save(); if (!id.startsWith('c_')) reportSkill(id); }
+      renderWhere();
+    });
+  });
+  // CTF は正解した時に「体験済み」にする（押しただけでは付けない）
+  ['c_b64', 'c_rot', 'c_jwt'].forEach((id, i) => {
+    const key = ['base64', 'rot13', 'jwt'][i];
+    const card = document.querySelector('.card[data-topic="' + id + '"]');
+    if (!card) return;
+    card.addEventListener('click', () => setTimeout(() => {
+      if (state.challenges[key]) { state.tried[id] = true; reportSkill(id); } else delete state.tried[id];
+      state.save(); renderWhere();
+    }, 0), true);
+  });
+  const current = (document.querySelector('.module-section.active') || {}).id;
+  renderWhere(whSteps().some(s => s.id === current) ? current : whSteps()[0].id);
+}
+
+
+// ========== 図解（流れを箱と矢印で見る） ==========
+// lane: [種類(ok=ふつう / bad=攻撃 / fix=対策), 見出し, [箱…]]  箱の中の `…` はコード表示
+const DIAG = {
+  sqli: [
+    ['ok','ふつうの入力',['入力：`taro`','SQL：`… WHERE name=\'taro\'`','DBが taro を探す','1件だけ見つかる']],
+    ['bad','攻撃の入力',['入力：`admin\' OR \'1\'=\'1`','SQL：`… WHERE name=\'admin\' OR \'1\'=\'1\'`','`\'1\'=\'1\'` は いつも正しい','全員が条件に合う → ログイン成功']],
+    ['fix','対策',['入力を「命令」に混ぜず「値」として渡す（プレースホルダ）','細工した文字も ただの名前として扱われる','攻撃が成立しない']]],
+  xss: [
+    ['ok','ふつうのコメント',['コメント：`こんにちは`','ページに差し込む','文字として表示される']],
+    ['bad','攻撃のコメント',['コメント：`<img src=x onerror=…>`','そのままHTMLに差し込む','閲覧者のブラウザが命令を実行']],
+    ['fix','対策',['`<` `>` を `&lt;` `&gt;` に置き換える（エスケープ）','文字として見えるだけ','＋ CSP ヘッダーで外部スクリプトを禁止']]],
+  hash: [
+    ['ok','パスワードの保存',['パスワード','ハッシュ（一方向の変換）','DBにはハッシュだけを保存']],
+    ['bad','辞書攻撃',['よくある言葉のリスト','1つずつハッシュにする','盗んだハッシュと一致を探す','一致 → 元の言葉が判明']],
+    ['fix','対策',['ソルト（ユーザーごとの乱数）を混ぜる','遅い方式（PBKDF2 など）を使う','1回の試行が重く、総当たりが現実的でなくなる']]],
+  csrf: [
+    ['ok','ふつうの送金',['あなた（ログイン済み）','銀行サイトで送金ボタン','Cookie が付いて送信','送金される（本人の操作）']],
+    ['bad','CSRF 攻撃',['ログイン中に罠ページを開く','罠が銀行へ勝手に送信','ブラウザが Cookie を自動で付ける','本人の操作として実行される']],
+    ['fix','対策',['CSRFトークン（本人の画面にしかない値）を必須にする','SameSite Cookie で他サイトからの送信に Cookie を付けない','罠は値を知らず、拒否される']]],
+  aes: [
+    ['ok','暗号化',['文章＋パスワード','PBKDF2 で鍵を作る','AES-GCM（鍵＋毎回新しい IV）','暗号文＋改ざん検出タグ']],
+    ['ok','復号',['同じパスワード','同じ鍵ができる','暗号文を開く','元の文章']],
+    ['fix','改ざんされたら',['暗号文を1文字書き換える','タグが合わない','復号を拒否（壊れたと分かる）']]],
+  ecdh: [
+    ['ok','鍵交換',['Aさん：秘密 a → 公開値 A','Bさん：秘密 b → 公開値 B','公開値だけを交換（盗聴されてもよい）','Aは「a と B」、Bは「b と A」から同じ秘密ができる']],
+    ['fix','その後',['できた共通の秘密','AES などで暗号化','盗聴者は秘密を作れない']]],
+  pbkdf2: [
+    ['ok','鍵を作る',['パスワード＋ソルト','ハッシュを何万回も繰り返す','暗号用の鍵']],
+    ['fix','なぜ繰り返す？',['1回の計算を わざと重くする','正しい人：1回で済む','攻撃者：何億回も試すので 時間がかかりすぎる']]],
+  csprng: [
+    ['ok','安全な乱数',['OS の乱数源 `crypto.getRandomValues`','予測できない値','トークン・鍵・IV に使う']],
+    ['bad','危ない乱数',['`Math.random()`','出方に規則性があり得る','予測される可能性 → 鍵やトークンには使わない']]],
+  http: [
+    ['ok','通信の流れ',['ブラウザ → リクエスト','サーバー → 返事＋ヘッダー','ブラウザがヘッダーの指示に従う']],
+    ['fix','主なヘッダー',['CSP：外部スクリプトを禁止（XSS対策）','HSTS：HTTPSだけを使わせる','X-Frame-Options：枠への埋め込みを禁止（クリックジャッキング対策）']],
+    ['bad','Missing（不足）の意味',['そのヘッダーが無い','その防御が効いていない','設定を足す']]],
+  jwt: [
+    ['ok','JWT の形',['ヘッダー（alg）','`.`','中身（payload）','`.`','署名']],
+    ['ok','誰が読める？',['ヘッダーと中身は Base64','誰でもデコードして読める','署名が「改ざんされていない」ことを守る']],
+    ['bad','alg:none 攻撃',['alg を `none` に書き換える','署名なしを許すサーバー','中身を好きに改ざんして通る']],
+    ['fix','対策',['alg を固定する','署名を必ず検証する','`none` は拒否する']]],
+  cookie: [
+    ['ok','Cookie の流れ',['サーバー：`Set-Cookie`','ブラウザが保存','次のリクエストに自動で付く']],
+    ['fix','属性の意味',['HttpOnly：JSから読めない（XSSで盗みにくい）','Secure：HTTPSのときだけ送る','SameSite：他サイトからの送信では付けない（CSRF対策）']]],
+  c_b64: [
+    ['ok','Base64 とは',['`flag{…}`','文字を64種の文字に置き換える（鍵なし）','`Encoded: …`']],
+    ['bad','解き方',['`atob("…")` でデコード','元の `flag{…}` に戻る','暗号ではなく ただの変換']]],
+  c_rot: [
+    ['ok','ROT13 とは',['アルファベットを13個ずらす','a→n、b→o …','もう一度ずらすと元に戻る']],
+    ['bad','解き方',['同じ13ずらしをもう一度','`flag{…}` に戻る','鍵がない → 暗号ではない']]],
+  c_jwt: [
+    ['ok','トークンの形',['ヘッダー','`.`','中身','`.`','（署名なし）']],
+    ['bad','解き方',['真ん中の文字列を Base64 でデコード','`flag{…}` が見える','alg:none のトークンは中身を誰でも作れる']]],
+  s_spoof: [['bad','脅威',['他人のふりをする','認証を通ってしまう']],['fix','対策',['MFA・強い認証']]],
+  s_tamper: [['bad','脅威',['通信やデータを書き換える','内容が変わる']],['fix','対策',['HTTPS・署名・入力検証']]],
+  s_repud: [['bad','脅威',['「やっていない」と言う','証拠がない']],['fix','対策',['監査ログ・デジタル署名']]],
+  s_info: [['bad','脅威',['見られてはいけない情報が漏れる','エラー文・一覧の公開など']],['fix','対策',['暗号化・アクセス制御']]],
+  s_dos: [['bad','脅威',['大量のリクエスト','サービスが止まる']],['fix','対策',['レート制限・DDoS対策']]],
+  s_elev: [['bad','脅威',['一般ユーザーが管理者の操作をする','権限が上がる']],['fix','対策',['権限の検証（RBAC）']]]
+};
+function diagHTML(id) {
+  const d = DIAG[id]; if (!d) return '';
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const box = s => '<span class="dg-box">' + esc(s).replace(/`([^`]+)`/g, '<code>$1</code>') + '</span>';
+  return '<details class="dg" open><summary>🗺 図で見る（流れ）</summary>' + d.map(l =>
+    '<div class="dg-lane ' + l[0] + '"><span class="dg-tag">' + (l[0] === 'bad' ? '⚠ ' : l[0] === 'fix' ? '🛡 ' : '▶ ') + esc(l[1]) + '</span>' +
+    l[2].map(box).join('<span class="dg-ar">▶</span>') + '</div>').join('') + '</details>';
+}
+
+// 進み具合を security-hub に渡す（同じ場所に保存。bridge.js が無くても動く）
+const HUB_ID = { sqli:'sqli', xss:'xss', csrf:'csrf', aes:'crypto-aes', jwt:'crypto-jwt', c_b64:'ctf-beginner', c_rot:'ctf-intermediate', c_jwt:'ctf-advanced',
+  s_spoof:'threat-modeling', s_tamper:'threat-modeling', s_repud:'threat-modeling', s_info:'threat-modeling', s_dos:'threat-modeling', s_elev:'threat-modeling' };
+function reportSkill(topic) {
+  const id = HUB_ID[topic]; if (!id) return false;
+  if (id === 'threat-modeling' && !['s_spoof','s_tamper','s_repud','s_info','s_dos','s_elev'].every(x => state.tried[x])) return false;
+  try {
+    const prog = JSON.parse(localStorage.getItem('secbridge_progress') || '{}');
+    if (!prog[id]) {
+      prog[id] = { completedAt: Date.now(), score: state.xp, meta: { source: 'whitehacker-lab', topic: topic } };
+      localStorage.setItem('secbridge_progress', JSON.stringify(prog));
+      const ev = JSON.parse(localStorage.getItem('secbridge_events') || '[]');
+      ev.push({ type: 'skill_complete', ts: Date.now(), skillId: id, score: state.xp, unlockedCount: 0 });
+      if (ev.length > 200) ev.splice(0, ev.length - 200);
+      localStorage.setItem('secbridge_events', JSON.stringify(ev));
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+// ========== INITIALIZATION ==========
+        window.addEventListener('DOMContentLoaded', () => {
+            initCTFChallenges();
+            setupLearning();
+            state.updateUI();
+            // Initialize radar chart after state is ready
+            setTimeout(() => {
+                initRadarChart();
+            }, 100);
+        });
+    </script>
+<script>/*ecoDeep*/(function(){function go(){var h=location.hash.replace('#','');if(!h)return;var card=null,mod=null,m=h.match(/^t=(.+)$/);
+if(m){card=document.querySelector('.card[data-topic="'+m[1]+'"]');var s=card&&card.closest('.module-section');mod=s&&s.id}else{m=h.match(/^m=(.+)$/);if(m)mod=m[1]}
+if(mod&&typeof switchModule==='function'&&document.getElementById(mod)){switchModule(mod);if(card)setTimeout(function(){card.scrollIntoView({block:'start'});card.style.outline='2px solid #00d9ff';setTimeout(function(){card.style.outline=''},2500)},80)}}
+window.addEventListener('hashchange',go);setTimeout(go,400)})();</script>
+</body>
+</html>
