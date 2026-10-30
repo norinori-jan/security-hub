@@ -6,6 +6,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Security Hub - 司令塔</title>
+  <meta name="theme-color" content="#0a0e27">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://norinori-jan.github.io/security-hub/bridge.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700&display=swap');
@@ -786,5 +790,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});</script>
 </body>
 </html>
